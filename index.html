@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snippy for Quickbase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Figtree', sans-serif;
+        }
+        .section-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="#" class="flex items-center gap-2" onclick="showPage('home')">
+                        <img class="h-10 w-auto" src="https://raw.githubusercontent.com/ganttr/public-assets/main/snippy-logo.svg" alt="Snippy Logo">
+                        <span class="text-2xl font-bold text-slate-900">Snippy</span>
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex md:space-x-8">
+                    <a href="#features" class="font-medium text-slate-600 hover:text-blue-600 transition-colors">Features</a>
+                    <a href="#" class="font-medium text-slate-600 hover:text-blue-600 transition-colors" onclick="showPage('privacy')">Privacy Policy</a>
+                </nav>
+
+                <!-- CTA Button -->
+                <div class="flex items-center">
+                    <a href="#" id="install-link" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        Install for Chrome
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Home Page Section -->
+        <div id="page-home">
+            <!-- Hero Section -->
+            <section class="py-20 sm:py-28">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight">
+                        The Quickbase editor you've always wanted.
+                    </h1>
+                    <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-600">
+                        Supercharge your Quickbase formulas and code pages with syntax highlighting, themes, auto-formatting, version control, and more.
+                    </p>
+                    <div class="mt-8 flex justify-center gap-4">
+                        <a href="#" id="install-link-2" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Get Snippy for Chrome
+                        </a>
+                        <a href="#features" class="inline-flex items-center justify-center px-6 py-3 border border-slate-300 rounded-md shadow-sm text-base font-medium text-slate-700 bg-white hover:bg-slate-50">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section id="features" class="py-20 sm:py-28 bg-white">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Everything you need to code faster</h2>
+                        <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
+                            Snippy is packed with features designed for serious Quickbase developers.
+                        </p>
+                    </div>
+                    <div class="mt-16 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Syntax Highlighting</h3>
+                            <p class="mt-2 text-slate-600">Instantly readable formulas and code with beautiful, language-aware color themes (light and dark modes included).</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Auto-Formatting</h3>
+                            <p class="mt-2 text-slate-600">Clean up messy code with a single click. The "Beautify" button intelligently indents and formats your formulas and HTML.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Live Validation</h3>
+                            <p class="mt-2 text-slate-600">See formula errors and warnings in real-time as you type, directly in the editor gutter, just like a modern IDE.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Google Drive Backup</h3>
+                            <p class="mt-2 text-slate-600">Automatically save a versioned backup of your code to your own Google Drive every time you save, so you never lose your work.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Field & Function Helpers</h3>
+                            <p class="mt-2 text-slate-600">Quickly search and insert from a complete, dynamically updated list of all available fields and functions in your table.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-lg">
+                            <h3 class="text-lg font-bold text-slate-900">Modern Editor Experience</h3>
+                            <p class="mt-2 text-slate-600">Enjoy a full-featured CodeMirror editor with line numbers, bracket matching, and a clean, modern interface.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Donation Section -->
+            <section id="donate" class="py-20 sm:py-28">
+                <div class="max-w-3xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-3xl font-extrabold text-slate-900">Like Snippy?</h2>
+                    <p class="mt-4 text-lg text-slate-600">
+                        This tool is developed and maintained by a solo developer. If you find it useful, please consider supporting its future development. Your contribution helps cover costs and fuels new features!
+                    </p>
+                    <div class="mt-8">
+                        <a href="#" id="donate-link" class="inline-flex items-center justify-center px-8 py-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-pink-600 hover:bg-pink-700">
+                            💖 Support Snippy
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Privacy Policy Page Section -->
+        <div id="page-privacy" class="section-hidden">
+            <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+                <div class="prose prose-lg text-slate-600 mx-auto">
+                    <h1 class="text-4xl font-extrabold text-slate-900">Privacy Policy for Snippy</h1>
+                    <p class="lead">Last Updated: June 27, 2024</p>
+                    
+                    <p>This Privacy Policy explains how Snippy for Quickbase ("we," "us," or "our") handles your information when you use our Chrome extension (the "Service"). Your privacy and data security are our top priorities.</p>
+                    
+                    <h2>Information We Do NOT Collect or Store</h2>
+                    <p>We want to be crystal clear about what we don't do. Snippy is designed to be a client-side tool that enhances your Quickbase experience without compromising your data.</p>
+                    <ul>
+                        <li><strong>Your Code and Formulas:</strong> Snippy does NOT save, store, transmit, or log any of the code or formulas you write. Your work is processed in your browser and sent directly back to your Quickbase page or, with your explicit action, to your own Google Drive account. It never touches our servers.</li>
+                        <li><strong>Your Quickbase Data:</strong> Snippy does not read, access, or store any of the data within your Quickbase applications or tables.</li>
+                    </ul>
+
+                    <h2>Information We Collect and How We Use It</h2>
+                    <p>We collect the absolute minimum information necessary for the extension to function and to verify donor support.</p>
+                    
+                    <h3>1. Google Drive Integration (Optional)</h3>
+                    <p>If you choose to use the "Save to Google Drive" feature, you will be asked to grant the extension permission to access your Google Drive.</p>
+                    <ul>
+                        <li><strong>Permission Requested:</strong> <code>https://www.googleapis.com/auth/drive.file</code></li>
+                        <li><strong>What this allows:</strong> This is a restricted permission that allows Snippy to create a new folder named "Snippy for Quickbase" in your Google Drive and to create, read, and update files **only within that specific folder**.</li>
+                        <li><strong>What this does NOT allow:</strong> The extension **cannot** see, read, or access any other files or folders in your Google Drive. Its access is strictly limited to the folder it creates for its own use.</li>
+                    </ul>
+
+                    <h3>2. Donation Verification (Optional)</h3>
+                    <p>If you choose to support Snippy through a donation, we need a way to verify your status to unlock donor-only features.</p>
+                    <ul>
+                        <li><strong>Information Collected:</strong> We will store the email address you use during the donation process.</li>
+                        <li><strong>How it's used:</strong> This email address is used solely to verify your donation status when you enter it into the extension. It will not be used for marketing, sold, or shared with any third parties.</li>
+                    </ul>
+
+                    <h3>3. Feedback and Suggestions (Optional, Donors-Only)</h3>
+                    <p>If you are a verified donor and choose to submit feedback or feature suggestions through the extension:</p>
+                    <ul>
+                        <li><strong>Information Collected:</strong> We collect the content of your message.</li>
+                        <li><strong>How it's used:</strong> This information is used exclusively to improve the Snippy extension.</li>
+                    </ul>
+                    
+                    <h2>Data Security</h2>
+                    <p>All data transmitted between the extension and our verification services (for donations) is encrypted using industry-standard TLS (HTTPS). We take reasonable measures to protect the minimal information we store.</p>
+
+                    <h2>Changes to This Privacy Policy</h2>
+                    <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
+
+                    <h2>Contact Us</h2>
+                    <p>If you have any questions about this Privacy Policy, please contact us at [Your Contact Email Address].</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200">
+        <div class="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <p>&copy; 2024 Snippy for Quickbase. All Rights Reserved.</p>
+            <p class="mt-2">
+                <a href="#" class="hover:text-blue-600" onclick="showPage('privacy')">Privacy Policy</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            document.getElementById('page-home').classList.add('section-hidden');
+            document.getElementById('page-privacy').classList.add('section-hidden');
+            
+            document.getElementById('page-' + pageId).classList.remove('section-hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // Set placeholder links - update these when you have the real URLs
+        document.getElementById('install-link').href = "#"; // TODO: Add Chrome Web Store link
+        document.getElementById('install-link-2').href = "#"; // TODO: Add Chrome Web Store link
+        document.getElementById('donate-link').href = "#"; // TODO: Add donation page link (e.g., Ko-fi, Stripe Checkout)
+    </script>
+</body>
+</html>
