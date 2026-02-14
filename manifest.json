@@ -1,20 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Snippy Code Enhancer",
-  "version": "0.0.1",
-   "description": "Upgrades Quickbase Code Pages with syntax highlighting, theme selection, and formatting assistance.",
-  "permissions": [
-    "scripting",
-    "activeTab",
+  "version": "2.1.0",
+   "description": "Upgrades Quickbase Code Pages and Formulas with themes and error checking. Allows revision saving. ",
+  "permissions": [    
+"webNavigation",
+  "tabs",  
     "identity",
-    "storage",
-    "tabs"
+    "storage"    
   ],
   "host_permissions": [
     "https://*.quickbase.com/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+	"type": "module"
   },
   "oauth2": {
     "client_id": "378800773413-gr916c1v80ukj9upfm8ebq2ar4qe0m3b.apps.googleusercontent.com",
@@ -25,14 +25,14 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.quickbase.com/db/*?a=pageedit*",
-        "https://*.quickbase.com/nav/app/*/action/pageedit*",
-        "https://*.quickbase.com/db/*?a=mf&*",
-        "https://*.quickbase.com/nav/app/*/table/*/action/mf?*"
+         "*://*.quickbase.com/db/*",
+    "*://*.quickbase.com/nav/*"
+
       ],
       "js": [
         "lib/beautifier.bundle.js",
         "injectEditor.js"
+		
       ],
       "css": []
     }
@@ -49,9 +49,19 @@
 	"codemirror/theme/*.css",
         "snippy-logo.svg",
         "page_world_script.js",
-	"themes.json"
+	"themes.json",
+	"icon16.png",
+	"icon32.png",
+	"icon48.png",
+	"icon128.png"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["https://*.quickbase.com/*"]
     }
-  ]
+  ],
+ 
+ "icons": {
+   "48": "icon48.png",
+  "128": "icon128.png"
+	}
+  
 }

@@ -1,10 +1,14 @@
-// qb-formula-mode.js - REVISED: Added support for variables and fixed partial keyword matching.
+if (!window.SNIPPY_DEBUG_MODE) {
+  console.log = console.info = console.debug = console.warn = () => {};
+}
+
+
 (function(mod) {
-  if (typeof exports == "object" && typeof module == "object") // CommonJS
+  if (typeof exports == "object" && typeof module == "object") 
     mod(require("../../lib/codemirror"));
-  else if (typeof define == "function" && define.amd) // AMD
+  else if (typeof define == "function" && define.amd) 
     define(["../../lib/codemirror"], mod);
-  else // Plain browser env
+  else 
     mod(CodeMirror);
 })(function(CodeMirror) {
 "use strict";
@@ -21,7 +25,7 @@ CodeMirror.defineMode("qb-formula", function(config, parserConfig) {
   ];
 
   const allKeywords = functionKeywords.concat(variableKeywords);
-  // Ensure we match whole words only using word boundaries (\b)
+  
   const escapedKeywords = allKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const keywords = new RegExp("\\b(" + escapedKeywords.join('|') + ")\\b", "i");
   
@@ -32,30 +36,30 @@ CodeMirror.defineMode("qb-formula", function(config, parserConfig) {
   const literal = /\b(?:true|false|null)\b/i;
   const operator = /[-+\/*=<>!&]+|\b(?:and|or|not)\b/i;
   
-  // --- NEW: Regex for variables starting with $ ---
+  
   const variable = /\$[a-zA-Z_][\w]*/;
 
-  // --- NEW: Regex for any other identifier that isn't a keyword ---
+  
   const identifier = /[a-zA-Z_][\w]*/;
 
   return {
     token: function(stream) {
       if (stream.match(comment)) return "comment";
-      if (stream.match(field)) return "variable-2"; // Style for [Fields]
+      if (stream.match(field)) return "variable-2"; 
       if (stream.match(string)) return "string";
       
-      // --- NEW: Match variables before keywords ---
-      if (stream.match(variable)) return "variable-3"; // A different style for $variables
+      
+      if (stream.match(variable)) return "variable-3"; 
 
       if (stream.match(keywords)) return "keyword";
       if (stream.match(literal)) return "atom";
       if (stream.match(number)) return "number";
       if (stream.match(operator)) return "operator";
 
-      // --- NEW: Match generic identifiers last ---
-      if (stream.match(identifier)) return "variable"; // Default style for other words
+      
+      if (stream.match(identifier)) return "variable"; 
 
-      // If nothing matched, advance the stream and return null
+      
       stream.next();
       return null;
     }

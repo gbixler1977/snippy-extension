@@ -1,665 +1,1776 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snippy Editor</title>
+    <link rel="icon" type="image/png" href="icon32.png">
     <link rel="stylesheet" href="codemirror/codemirror.css">
     <link rel="stylesheet" href="codemirror/dialog.css">
     <link rel="stylesheet" href="codemirror/theme/3024-day.css">
-<link rel="stylesheet" href="codemirror/theme/3024-night.css">
-<link rel="stylesheet" href="codemirror/theme/abbott.css">
-<link rel="stylesheet" href="codemirror/theme/abcdef.css">
-<link rel="stylesheet" href="codemirror/theme/ambiance.css">
-<link rel="stylesheet" href="codemirror/theme/ayu-dark.css">
-<link rel="stylesheet" href="codemirror/theme/ayu-mirage.css">
-<link rel="stylesheet" href="codemirror/theme/base16-dark.css">
-<link rel="stylesheet" href="codemirror/theme/base16-light.css">
-<link rel="stylesheet" href="codemirror/theme/bespin.css">
-<link rel="stylesheet" href="codemirror/theme/blackboard.css">
-<link rel="stylesheet" href="codemirror/theme/cobalt.css">
-<link rel="stylesheet" href="codemirror/theme/colorforth.css">
-<link rel="stylesheet" href="codemirror/theme/darcula.css">
-<link rel="stylesheet" href="codemirror/theme/dracula.css">
-<link rel="stylesheet" href="codemirror/theme/duotone-dark.css">
-<link rel="stylesheet" href="codemirror/theme/duotone-light.css">
-<link rel="stylesheet" href="codemirror/theme/eclipse.css">
-<link rel="stylesheet" href="codemirror/theme/elegant.css">
-<link rel="stylesheet" href="codemirror/theme/erlang-dark.css">
-<link rel="stylesheet" href="codemirror/theme/gruvbox-dark.css">
-<link rel="stylesheet" href="codemirror/theme/hopscotch.css">
-<link rel="stylesheet" href="codemirror/theme/icecoder.css">
-<link rel="stylesheet" href="codemirror/theme/idea.css">
-<link rel="stylesheet" href="codemirror/theme/isotope.css">
-<link rel="stylesheet" href="codemirror/theme/lesser-dark.css">
-<link rel="stylesheet" href="codemirror/theme/liquibyte.css">
-<link rel="stylesheet" href="codemirror/theme/lucario.css">
-<link rel="stylesheet" href="codemirror/theme/material.css">
-<link rel="stylesheet" href="codemirror/theme/material-darker.css">
-<link rel="stylesheet" href="codemirror/theme/material-ocean.css">
-<link rel="stylesheet" href="codemirror/theme/material-palenight.css">
-<link rel="stylesheet" href="codemirror/theme/mbo.css">
-<link rel="stylesheet" href="codemirror/theme/mdn-like.css">
-<link rel="stylesheet" href="codemirror/theme/midnight.css">
-<link rel="stylesheet" href="codemirror/theme/monokai.css">
-<link rel="stylesheet" href="codemirror/theme/moxer.css">
-<link rel="stylesheet" href="codemirror/theme/neat.css">
-<link rel="stylesheet" href="codemirror/theme/neo.css">
-<link rel="stylesheet" href="codemirror/theme/night.css">
-<link rel="stylesheet" href="codemirror/theme/nord.css">
-<link rel="stylesheet" href="codemirror/theme/oceanic-next.css">
-<link rel="stylesheet" href="codemirror/theme/panda-syntax.css">
-<link rel="stylesheet" href="codemirror/theme/paraiso-dark.css">
-<link rel="stylesheet" href="codemirror/theme/paraiso-light.css">
-<link rel="stylesheet" href="codemirror/theme/pastel-on-dark.css">
-<link rel="stylesheet" href="codemirror/theme/railscasts.css">
-<link rel="stylesheet" href="codemirror/theme/rubyblue.css">
-<link rel="stylesheet" href="codemirror/theme/seti.css">
-<link rel="stylesheet" href="codemirror/theme/shadowfox.css">
-<link rel="stylesheet" href="codemirror/theme/solarized.css">
-<link rel="stylesheet" href="codemirror/theme/ssms.css">
-<link rel="stylesheet" href="codemirror/theme/the-matrix.css">
-<link rel="stylesheet" href="codemirror/theme/tomorrow-night-bright.css">
-<link rel="stylesheet" href="codemirror/theme/tomorrow-night-eighties.css">
-<link rel="stylesheet" href="codemirror/theme/ttcn.css">
-<link rel="stylesheet" href="codemirror/theme/twilight.css">
-<link rel="stylesheet" href="codemirror/theme/vibrant-ink.css">
-<link rel="stylesheet" href="codemirror/theme/xq-dark.css">
-<link rel="stylesheet" href="codemirror/theme/xq-light.css">
-<link rel="stylesheet" href="codemirror/theme/yeti.css">
-<link rel="stylesheet" href="codemirror/theme/yonce.css">
-<link rel="stylesheet" href="codemirror/theme/zenburn.css">
-<link rel="stylesheet" href="codemirror/theme/quickbase-light.css">
-<link rel="stylesheet" href="codemirror/theme/quickbase-dark.css">
-<link rel="stylesheet" href="codemirror/lint.css">
+    <link rel="stylesheet" href="codemirror/theme/3024-night.css">
+    <link rel="stylesheet" href="codemirror/theme/abbott.css">
+    <link rel="stylesheet" href="codemirror/theme/abcdef.css">
+    <link rel="stylesheet" href="codemirror/theme/ambiance.css">
+    <link rel="stylesheet" href="codemirror/theme/ayu-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/ayu-mirage.css">
+    <link rel="stylesheet" href="codemirror/theme/base16-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/base16-light.css">
+    <link rel="stylesheet" href="codemirror/theme/bespin.css">
+    <link rel="stylesheet" href="codemirror/theme/blackboard.css">
+    <link rel="stylesheet" href="codemirror/theme/cobalt.css">
+    <link rel="stylesheet" href="codemirror/theme/colorforth.css">
+    <link rel="stylesheet" href="codemirror/theme/darcula.css">
+    <link rel="stylesheet" href="codemirror/theme/dracula.css">
+    <link rel="stylesheet" href="codemirror/theme/duotone-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/duotone-light.css">
+    <link rel="stylesheet" href="codemirror/theme/eclipse.css">
+    <link rel="stylesheet" href="codemirror/theme/elegant.css">
+    <link rel="stylesheet" href="codemirror/theme/erlang-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/gruvbox-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/hopscotch.css">
+    <link rel="stylesheet" href="codemirror/theme/icecoder.css">
+    <link rel="stylesheet" href="codemirror/theme/idea.css">
+    <link rel="stylesheet" href="codemirror/theme/isotope.css">
+    <link rel="stylesheet" href="codemirror/theme/lesser-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/liquibyte.css">
+    <link rel="stylesheet" href="codemirror/theme/lucario.css">
+    <link rel="stylesheet" href="codemirror/theme/material.css">
+    <link rel="stylesheet" href="codemirror/theme/material-darker.css">
+    <link rel="stylesheet" href="codemirror/theme/material-ocean.css">
+    <link rel="stylesheet" href="codemirror/theme/material-palenight.css">
+    <link rel="stylesheet" href="codemirror/theme/mbo.css">
+    <link rel="stylesheet" href="codemirror/theme/mdn-like.css">
+    <link rel="stylesheet" href="codemirror/theme/midnight.css">
+    <link rel="stylesheet" href="codemirror/theme/monokai.css">
+    <link rel="stylesheet" href="codemirror/theme/moxer.css">
+    <link rel="stylesheet" href="codemirror/theme/neat.css">
+    <link rel="stylesheet" href="codemirror/theme/neo.css">
+    <link rel="stylesheet" href="codemirror/theme/night.css">
+    <link rel="stylesheet" href="codemirror/theme/nord.css">
+    <link rel="stylesheet" href="codemirror/theme/oceanic-next.css">
+    <link rel="stylesheet" href="codemirror/theme/panda-syntax.css">
+    <link rel="stylesheet" href="codemirror/theme/paraiso-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/paraiso-light.css">
+    <link rel="stylesheet" href="codemirror/theme/pastel-on-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/railscasts.css">
+    <link rel="stylesheet" href="codemirror/theme/rubyblue.css">
+    <link rel="stylesheet" href="codemirror/theme/seti.css">
+    <link rel="stylesheet" href="codemirror/theme/shadowfox.css">
+    <link rel="stylesheet" href="codemirror/theme/solarized.css">
+    <link rel="stylesheet" href="codemirror/theme/ssms.css">
+    <link rel="stylesheet" href="codemirror/theme/the-matrix.css">
+    <link rel="stylesheet" href="codemirror/theme/tomorrow-night-bright.css">
+    <link rel="stylesheet" href="codemirror/theme/tomorrow-night-eighties.css">
+    <link rel="stylesheet" href="codemirror/theme/ttcn.css">
+    <link rel="stylesheet" href="codemirror/theme/twilight.css">
+    <link rel="stylesheet" href="codemirror/theme/vibrant-ink.css">
+    <link rel="stylesheet" href="codemirror/theme/xq-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/xq-light.css">
+    <link rel="stylesheet" href="codemirror/theme/yeti.css">
+    <link rel="stylesheet" href="codemirror/theme/yonce.css">
+    <link rel="stylesheet" href="codemirror/theme/zenburn.css">
+    <link rel="stylesheet" href="codemirror/theme/quickbase-light.css">
+    <link rel="stylesheet" href="codemirror/theme/quickbase-dark.css">
+    <link rel="stylesheet" href="codemirror/lint.css">
+    <link rel="stylesheet" href="codemirror/show-hint.css">
     <style>
-        /* Base & Theme Styles */
-        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap');
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #ffffff; display: flex; flex-direction: column; font-family: 'Figtree', sans-serif; transition: background-color 0.3s; }
-        body.dark { background-color: #282a36; color: #f8f8f2; }
-        .hidden { display: none !important; }
+	
+	@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+	
+      /* Base & Theme Styles */
+      @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap');
 
-        /* Header Styles */
-        #header { display: flex; align-items: center; gap: 15px; padding: 8px 15px; background-color: #f0f0f0; border-bottom: 1px solid #ccc; color: #333; transition: all 0.3s; }
-        body.dark #header { background-color: #21222C; border-bottom-color: #44475a; color: #f8f8f2; }
-        
-        .snippy-brand { display: flex; align-items: center; gap: 0px; margin-right: 15px; font-family: 'Figtree', sans-serif; }
-        .snippy-logo { height: 48px; width: 48px; }
-        .snippy-brand-text { display: flex; flex-direction: column; line-height: 1.1; }
-        .snippy-brand-text .main-name { font-weight: 700; font-size: 16px; }
-        .snippy-brand-text .sub-name { font-weight: 400; font-size: 11px; opacity: 0.8; }
-        
-        .control-group { display: flex; align-items: center; gap: 8px; position: relative; }
-        #header button, #theme-selector, #revisions-selector, #field-search-input, #function-search-input { border-radius: 4px; padding: 4px 10px; cursor: pointer; border: 1px solid #ccc; background-color: #fff; color: #333; transition: all 0.3s; font-family: 'Figtree', sans-serif; }
-        #header button:disabled { opacity: 0.5; cursor: not-allowed; }
-        body.dark #header button, body.dark #theme-selector, body.dark #revisions-selector, body.dark #field-search-input, body.dark #function-search-input { border-color: #6272a4; background-color: #44475a; color: #f8f8f2; }
-        
-        /* Editor & Footer Styles */
-        #editor-container { flex-grow: 1; position: relative; }
-        .CodeMirror { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #footer { padding: 10px; background-color: #f9f9f9; border-top: 1px solid #ccc; display: flex; justify-content: flex-end; gap: 10px; transition: all 0.3s; }
-        body.dark #footer { background-color: #21222C; border-top-color: #44475a; }
-        #footer button, .modal-footer button { border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 14px; border: 1px solid #ccc; background-color: #fff; color: #333; }
-        body.dark #footer button, body.dark .modal-footer button { border-color: #6272a4; background-color: #44475a; color: #f8f8f2; }
-        #footer button.primary, .modal-footer button.primary { background-color: #3b82f6; color: white; border-color: #2563eb; }
-        body.dark #footer button.primary, body.dark .modal-footer button.primary { background-color: #50fa7b; color: #282a36; border-color: #50fa7b; }
-        .modal-footer button.danger { background-color: #ef4444; color: white; border-color: #dc2626; }
-        body.dark .modal-footer button.danger { background-color: #ff5555; color: #f8f8f2; border-color: #ff5555; }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Figtree', sans-serif;
+        transition: background-color 0.3s;
+      }
 
+      body.dark {
+        background-color: #282a36;
+        color: #f8f8f2;
+      }
 
-        /* --- Custom Styles --- */
+      .hidden {
+        display: none !important;
+      }
 
-.CodeMirror-matchingbracket {
-    background-color: rgba(80, 250, 123, 0.6) !important; /* Your green highlight */
-    color: inherit !important; /* Use the theme's own text color */
-    font-weight: bold !important;
+      /* Header Styles */
+      #header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 8px 15px;
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #ccc;
+        color: #333;
+        transition: all 0.3s;
+      }
+
+      body.dark #header {
+        background-color: #21222C;
+        border-bottom-color: #44475a;
+        color: #f8f8f2;
+      }
+
+      .snippy-brand {
+        display: flex;
+        align-items: center;
+        gap: 0px;
+        margin-right: 15px;
+        font-family: 'Figtree', sans-serif;
+      }
+
+      .snippy-logo {
+        height: 48px;
+        width: 48px;
+      }
+
+      .snippy-brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+
+      .snippy-brand-text .main-name {
+        font-weight: 700;
+        font-size: 16px;
+      }
+
+      .snippy-brand-text .sub-name {
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.8;
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+
+      #header button,
+      #theme-selector,
+      #revisions-selector,
+      #field-search-input,
+      #function-search-input {
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        color: #333;
+        transition: all 0.3s;
+        font-family: 'Figtree', sans-serif;
+      }
+
+      #header button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      body.dark #header button,
+      body.dark #theme-selector,
+      body.dark #revisions-selector,
+      body.dark #field-search-input,
+      body.dark #function-search-input {
+        border-color: #6272a4;
+        background-color: #44475a;
+        color: #f8f8f2;
+      }
+
+      /* Editor & Footer Styles */
+      #editor-container {
+        flex-grow: 1;
+        position: relative;
+      }
+
+      .CodeMirror {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #footer {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-top: 1px solid #ccc;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        transition: all 0.3s;
+      }
+
+      body.dark #footer {
+        background-color: #21222C;
+        border-top-color: #44475a;
+      }
+
+      #footer button,
+      .modal-footer button {
+        border-radius: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        color: #333;
+      }
+
+      body.dark #footer button,
+      body.dark .modal-footer button {
+        border-color: #6272a4;
+        background-color: #44475a;
+        color: #f8f8f2;
+      }
+
+      #footer button.primary,
+      .modal-footer button.primary {
+        background-color: #3b82f6;
+        color: white;
+        border-color: #2563eb;
+      }
+
+      body.dark #footer button.primary,
+      body.dark .modal-footer button.primary {
+        background-color: #50fa7b;
+        color: #282a36;
+        border-color: #50fa7b;
+      }
+
+      .modal-footer button.danger {
+        background-color: #ef4444;
+        color: white;
+        border-color: #dc2626;
+      }
+
+      body.dark .modal-footer button.danger {
+        background-color: #ff5555;
+        color: #f8f8f2;
+        border-color: #ff5555;
+      }
+
+      /* --- Custom Styles --- */
+      .rich-editor-toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .rich-editor {
+        border: 1px solid #ccc;
+        padding: 8px;
+        min-height: 100px;
+        border-radius: 4px;
+        background: white;
+      }
+
+      body.dark .rich-editor {
+        background: #44475a;
+        color: #f8f8f2;
+        border-color: #6272a4;
+      }
+
+      .CodeMirror-matchingbracket {
+        background-color: rgba(80, 250, 123, 0.6) !important;
+        /* Your green highlight */
+        color: inherit !important;
+        /* Use the theme's own text color */
+        font-weight: bold !important;
+      }
+
+      .CodeMirror-lint-tooltip {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        color: #721c24;
+        font-family: 'Figtree', sans-serif;
+        font-size: 13px;
+        padding: 8px 12px;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        z-index: 1000;
+		position: absolute;
+		white-space: pre-wrap;
+      }
+.snippy-error-tooltip {
+  position: absolute;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  max-width: 300px;
+  font-size: 13px;
+  z-index: 9999;
+  white-space: pre-wrap;
+  pointer-events: none;
+  font-family: 'Figtree', sans-serif;
 }
 
-        .CodeMirror-lint-tooltip { background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; font-family: 'Figtree', sans-serif; font-size: 13px; padding: 8px 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.16); z-index: 1000; }
-        body.dark .CodeMirror-lint-tooltip { background-color: #5a2d31; border-color: #721c24; color: #f8f8f2; }
+      body.dark .CodeMirror-lint-tooltip {
+        background-color: #5a2d31;
+        border-color: #721c24;
+        color: #f8f8f2;
+      }
 
+      @keyframes snippyErrorPulse {
+        0% {
+          border-color: #facc15;
+          box-shadow: 0 0 2px 1px #facc15;
+        }
 
-.cm-error-token {
-    background-color: rgba(255, 255, 0, 0.6); /* A more intense highlighter yellow */
-    text-decoration-line: underline;
-    text-decoration-style: wavy;
-    text-decoration-color: #ef4444; /* A soft red */
+        50% {
+          border-color: #fde047;
+          box-shadow: 0 0 6px 2px #fde047;
+        }
+
+        100% {
+          border-color: #facc15;
+          box-shadow: 0 0 2px 1px #facc15;
+        }
+      }
+
+      .cm-error-token {
+        border: 2px solid #fffb00;
+        /* -- highlighter yellow -- */
+        border-radius: 3px;
+        padding: 1px 2px;
+        box-shadow: 0 0 2px 1px #fffb00;
+        animation: snippyErrorPulse 1.2s infinite;
+      }
+
+      .cm-error-token {
+        border: 2px solid #facc15;
+        border-radius: 3px;
+        padding: 1px 2px;
+        box-shadow: 0 0 2px 1px #facc15;
+        animation: snippyErrorPulse 1.2s infinite ease-in-out;
+      }
+
+      .CodeMirror-hint-text {
+        display: inline-block;
+      }
+
+      .CodeMirror-hint-details {
+        display: inline-block;
+        float: right;
+        color: #888;
+        margin-left: 2em;
+        font-style: italic;
+      }
+
+      .CodeMirror-hint-text,
+      .CodeMirror-hint-details {
+        font-size: var(--snippy-hint-font-size, 18px) !important;
+      }
+
+      body.dark .CodeMirror-hint-details {
+        color: #bbb;
+      }
+
+      .CodeMirror-hints .CodeMirror-hint {
+        padding: 4px 8px;
+        /* A bit more padding for readability */
+      }
+
+      /*--- Freeloader Insults Styles --- */
+      .insult-toast {
+        font-size: 16px;
+        background: #2c9483;
+        color: #ffffff;
+        font-weight: 600;
+        border: 2px solid #fff;
+        box-shadow: 0 0 15px rgba(44, 148, 131, 0.8),
+          0 0 40px rgba(44, 148, 131, 0.4);
+        padding: 14px 18px;
+        border-radius: 10px;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 90vw;
+        text-align: center;
+        line-height: 1.6;
+        opacity: 1;
+        z-index: 9999;
+        transition: all 1.75s ease-in-out;
+      }
+
+      .insult-toast.fade-away {
+        opacity: 0;
+        transform: translate(-50%, -75px);
+        filter: blur(2px);
+      }
+
+      .insult-toast a {
+        display: inline-block;
+        margin-top: 8px;
+        color: #ffffff;
+        font-weight: bold;
+        text-decoration: underline;
+        text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+      }
+
+      /* --- Field Helper Styles --- */
+      #field-list-container {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 2000;
+        min-width: 250px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      body.dark #field-list-container {
+        background-color: #282a36;
+        border-color: #6272a4;
+      }
+
+      .field-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .field-item:hover {
+        background-color: #f0f0f0;
+      }
+
+      body.dark .field-item:hover {
+        background-color: #44475a;
+      }
+
+      .field-item .field-name {
+        font-weight: 700;
+      }
+
+      .field-item .field-type {
+        font-size: 11px;
+        opacity: 0.7;
+        font-style: italic;
+      }
+
+      /* --- Modal Styles (Shared) --- */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 2999;
+      }
+
+      .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body.dark .modal {
+        background: #282a36;
+      }
+
+      .modal-header {
+        padding: 15px;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      body.dark .modal-header {
+        border-bottom-color: #44475a;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .modal-header .close-btn {
+        font-size: 24px;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #888;
+      }
+
+      body.dark .modal-header .close-btn {
+        color: #f8f8f2;
+      }
+
+      .modal-body {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+
+      .modal-footer {
+        padding: 15px;
+        border-top: 1px solid #ccc;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      body.dark .modal-footer {
+        border-top-color: #44475a;		
+      }
+	  #error-modal {
+  max-width: 450px;
 }
 
-        /* --- Field Helper Styles --- */
-        #field-list-container { display: none; position: absolute; top: 100%; left: 0; background-color: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 250px; overflow-y: auto; z-index: 2000; min-width: 250px; box-shadow: 0 5px 10px rgba(0,0,0,0.15); }
-        body.dark #field-list-container { background-color: #282a36; border-color: #6272a4; }
-        .field-item { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-        .field-item:hover { background-color: #f0f0f0; }
-        body.dark .field-item:hover { background-color: #44475a; }
-        .field-item .field-name { font-weight: 700; }
-        .field-item .field-type { font-size: 11px; opacity: 0.7; font-style: italic; }
+      /* --- Unlock Modal --- */
+      #unlock-modal {
+        max-width: 400px;
+      }
 
-        /* --- Modal Styles (Shared) --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2999; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 3000; display: flex; flex-direction: column; }
-        body.dark .modal { background: #282a36; }
-        .modal-header { padding: 15px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
-        body.dark .modal-header { border-bottom-color: #44475a; }
-        .modal-header h2 { margin: 0; font-size: 18px; }
-        .modal-header .close-btn { font-size: 24px; font-weight: bold; background: none; border: none; cursor: pointer; color: #888; }
-        body.dark .modal-header .close-btn { color: #f8f8f2; }
-        .modal-body { padding: 15px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; overflow-y: auto; }
-        .modal-footer { padding: 15px; border-top: 1px solid #ccc; display: flex; justify-content: flex-end; gap: 10px; }
-        body.dark .modal-footer { border-top-color: #44475a; }
-        
-        /* --- Function Helper Modal Styles --- */
-        #functions-modal { max-width: 700px; }
-        #functions-modal .modal-body { flex-direction: row; }
-        #function-list-wrapper { display: flex; flex-direction: column; gap: 10px; width: 40%; }
-        #function-search-input { width: 100%; box-sizing: border-box; }
-        #function-list-container { border: 1px solid #ccc; border-radius: 4px; height: 350px; overflow-y: auto; }
-        body.dark #function-list-container { border-color: #6272a4; }
-        .function-item { padding: 8px 12px; cursor: pointer; font-size: 14px; }
-        .function-item:hover, .function-item.selected { background-color: #f0f0f0; }
-        body.dark .function-item:hover, body.dark .function-item.selected { background-color: #44475a; }
-        #function-info-panel { flex-grow: 1; width: 60%; padding-left: 15px; border-left: 1px solid #eee; }
-        body.dark #function-info-panel { border-left-color: #44475a; }
-        #function-info-signature { font-weight: bold; font-family: monospace; font-size: 16px; background: #eee; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
-        body.dark #function-info-signature { background: #44475a; }
-        #function-info-description { margin-bottom: 15px; }
-        #function-info-example { font-family: monospace; white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 4px; font-size: 13px; }
-        body.dark #function-info-example { background: #44475a; }
+      /* --- Function Helper Modal Styles --- */
+      #functions-modal {
+        max-width: 700px;
+      }
 
-        /* --- Dropdown Styles (Shared) --- */
-        .dropdown-menu { position: absolute; top: calc(100% + 5px); background-color: #fff; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 1000; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
-        body.dark .dropdown-menu { background-color: #282a36; border-color: #6272a4; }
-        .dropdown-menu button { width: 100%; text-align: left; padding: 8px 12px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 14px; }
-        .dropdown-menu button:hover { background-color: #f0f0f0; }
-        body.dark .dropdown-menu button:hover { background-color: #44475a; }
-        
-        /* --- Settings Dropdown --- */
-        #settings-dropdown-container { position: relative; } /* REMOVED margin-left: auto */
-        #settings-dropdown { right: 0; width: 280px; padding: 10px; gap: 12px; }
-        .dropdown-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .dropdown-item > span { font-size: 14px; }
-        .dropdown-item .control-group { gap: 5px; }
-        .revisions-control { display: flex; flex-direction: column; width: 100%; }
-        .revisions-control #load-revisions-btn { width: 100%; }
-        #revisions-selector { width: 100%; margin-top: 5px; }
-        #revisions-placeholder { height: 27px; width: 100%; }
+      #functions-modal .modal-body {
+        flex-direction: row;
+      }
 
-        /* --- Admin & Donor Dropdowns --- */
-        #admin-dropdown-container, #donor-dropdown-container { position: relative; }
-        #admin-dropdown, #donor-dropdown { left: 0; width: 220px; }
+      #function-list-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 40%;
+      }
 
-        /* --- Search & Replace Bar --- */
-        #search-bar { background: #f0f0f0; padding: 8px 15px; border-bottom: 1px solid #ccc; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        body.dark #search-bar { background: #21222C; border-bottom-color: #44475a; }
-        #search-bar input { border: 1px solid #ccc; border-radius: 3px; padding: 4px 6px; }
-        body.dark #search-bar input { background: #282a36; border-color: #6272a4; color: #f8f8f2; }
-        #search-bar button { padding: 4px 10px; font-size: 12px; background-color: #fff; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; }
-        body.dark #search-bar button { background: #6272a4; color: #f8f8f2; border-color: #bd93f9; }
-        #search-close-btn { font-weight: bold; background: none; border: none; font-size: 20px; line-height: 1; padding: 0 5px; color: #555; margin-left: auto; }
-        body.dark #search-close-btn { color: #f8f8f2; }
-        #search-status { font-size: 12px; opacity: 0.8; margin: 0 5px; }
-        
-        /* --- Admin-related Modal Styles --- */
-        .admin-modal { max-width: 500px; }
-        .admin-section { padding: 15px; border-radius: 6px; border: 1px solid #ddd; }
-        body.dark .admin-section { border-color: #44475a; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
-        .form-group label { font-weight: bold; font-size: 14px; }
-        .form-group input[type="text"], .form-group input[type="email"], .form-group select, .form-group textarea { padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; font-family: 'Figtree', sans-serif; }
-        body.dark .form-group input[type="text"], body.dark .form-group input[type="email"], body.dark .form-group select, body.dark .form-group textarea { background-color: #44475a; border-color: #6272a4; color: #f8f8f2; }
-        .form-group-inline { display: flex; align-items: center; gap: 10px; }
-        .admin-feedback { font-size: 13px; padding: 10px; border-radius: 4px; display: none; margin-top: 15px; }
-        .admin-feedback.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
-        body.dark .admin-feedback.success { background-color: #2a4b37; color: #d1e7dd; border-color: #50fa7b; }
-        .admin-feedback.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        body.dark .admin-feedback.error { background-color: #5a2d31; color: #f8d7da; border-color: #ff5555; }
+      #function-search-input {
+        width: 100%;
+        box-sizing: border-box;
+      }
 
-        /* --- View Donors Modal --- */
-        #view-donors-modal { max-width: 800px; height: 80vh; }
-        #donor-filters { display: flex; gap: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        body.dark #donor-filters { border-bottom-color: #44475a; }
-        #donor-filters .form-group { flex-grow: 1; margin-bottom: 0; }
-        #donor-list-container { flex-grow: 1; overflow-y: auto; }
-        #donor-list-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        #donor-list-table th, #donor-list-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
-        body.dark #donor-list-table th, body.dark #donor-list-table td { border-bottom-color: #44475a; }
-        #donor-list-table th { font-weight: bold; position: sticky; top: 0; background-color: #fff; }
-        body.dark #donor-list-table th { background-color: #282a36; }
-        #donor-list-table tr:hover { background-color: #f9f9f9; }
-        body.dark #donor-list-table tr:hover { background-color: #44475a; }
-        #donor-list-table .admin-status-yes { color: #28a745; font-weight: bold; }
-        body.dark #donor-list-table .admin-status-yes { color: #50fa7b; }
-        .action-btn { font-size: 12px; padding: 4px 8px; }
-        .action-btn.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        body.dark .action-btn.danger { background-color: #5a2d31; color: #f8d7da; border-color: #ff5555; }
-        .action-btn.approve { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
-        body.dark .action-btn.approve { background-color: #2a4b37; color: #d1e7dd; border-color: #50fa7b; }
-        .action-btn.reject { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        body.dark .action-btn.reject { background-color: #5a2d31; color: #f8d7da; border-color: #ff5555; }
+      #function-list-container {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        height: 350px;
+        overflow-y: auto;
+      }
 
-        /* --- Confirmation Modal --- */
-        #confirmation-modal, #rejection-reason-modal { max-width: 450px; z-index: 4000; }
-        #confirmation-modal .modal-body { text-align: center; font-size: 16px; }
+      body.dark #function-list-container {
+        border-color: #6272a4;
+      }
 
-        /* --- Insult Management Modal --- */
-        #insult-management-modal { max-width: 1200px; height: 85vh; }
-        #insult-management-modal .modal-body { grid-template-columns: 1fr 3fr; gap: 20px; }
-        .insult-panel { display: flex; flex-direction: column; gap: 15px; }
-        .insult-panel h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        body.dark .insult-panel h3 { border-bottom-color: #44475a; }
-        #insults-by-status-container { overflow-y: auto; flex-grow: 1; border: 1px solid #ddd; border-radius: 4px; }
-        body.dark #insults-by-status-container { border-color: #44475a; }
-        #insults-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        #insults-table th, #insults-table td { padding: 8px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
-        body.dark #insults-table th, body.dark #insults-table td { border-bottom-color: #44475a; }
-        #insults-table th { font-weight: bold; position: sticky; top: 0; background-color: #f9f9f9; }
-        body.dark #insults-table th { background-color: #333545; }
-        #insults-table .insult-text-cell { min-width: 200px; font-style: italic; }
-        #insults-table .insult-actions-cell { width: 150px; text-align: center; }
-        #insults-table .insult-actions-cell .action-btn { margin: 2px; }
+      .function-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+      }
 
-        /* --- Donor Modal Styles --- */
-        #submit-insult-modal { max-width: 500px; }
-        #my-submissions-modal { max-width: 800px; height: 70vh; }
-        #my-submissions-container { overflow-y: auto; flex-grow: 1; }
-        #my-submissions-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        #my-submissions-table th, #my-submissions-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
-        body.dark #my-submissions-table th, body.dark #my-submissions-table td { border-bottom-color: #44475a; }
-        #my-submissions-table th { font-weight: bold; position: sticky; top: 0; background-color: #fff; }
-        body.dark #my-submissions-table th { background-color: #282a36; }
-        .status-pending { color: #ffc107; }
-        .status-approved { color: #28a745; }
-        .status-rejected, .status-rejected-duplicate { color: #dc3545; }
-        body.dark .status-pending { color: #f1fa8c; }
-        body.dark .status-approved { color: #50fa7b; }
-        body.dark .status-rejected, body.dark .status-rejected-duplicate { color: #ff5555; }
+      .function-item:hover,
+      .function-item.selected {
+        background-color: #f0f0f0;
+      }
+
+      body.dark .function-item:hover,
+      body.dark .function-item.selected {
+        background-color: #44475a;
+      }
+
+      #function-info-panel {
+        flex-grow: 1;
+        width: 60%;
+        padding-left: 15px;
+        border-left: 1px solid #eee;
+      }
+
+      body.dark #function-info-panel {
+        border-left-color: #44475a;
+      }
+
+      #function-info-signature {
+        font-weight: bold;
+        font-family: monospace;
+        font-size: 16px;
+        background: #eee;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+      }
+
+      body.dark #function-info-signature {
+        background: #44475a;
+      }
+
+      #function-info-description {
+        margin-bottom: 15px;
+      }
+
+      #function-info-example {
+        font-family: monospace;
+        white-space: pre-wrap;
+        background: #eee;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      body.dark #function-info-example {
+        background: #44475a;
+      }
+
+      /* --- Dropdown Styles (Shared) --- */
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 5px);
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      body.dark .dropdown-menu {
+        background-color: #282a36;
+        border-color: #6272a4;
+      }
+
+      .dropdown-menu button {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .dropdown-menu button:hover {
+        background-color: #f0f0f0;
+      }
+
+      body.dark .dropdown-menu button:hover {
+        background-color: #44475a;
+      }
+
+      /* --- Settings Dropdown --- */
+      #settings-dropdown-container {
+        position: relative;
+      }
+
+      /* REMOVED margin-left: auto */
+      #settings-dropdown {
+        right: 0;
+        width: 280px;
+        padding: 10px;
+        gap: 12px;
+      }
+
+      .dropdown-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .dropdown-item>span {
+        font-size: 14px;
+      }
+
+      .dropdown-item .control-group {
+        gap: 5px;
+      }
+
+      .revisions-control {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .revisions-control #load-revisions-btn {
+        width: 100%;
+      }
+
+      #revisions-selector {
+        width: 100%;
+        margin-top: 5px;
+      }
+
+      #revisions-placeholder {
+        height: 27px;
+        width: 100%;
+      }
+
+      /* --- Freeloader Dropdowns --- */
+      #already-donated-link {
+        font-size: 13px;
+        color: #222;
+        /* dark text for light mode */
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      body.dark #already-donated-link {
+        color: #f8f8f2;
+        /* light text for dark mode */
+      }
+
+      #already-donated-link:visited {
+        color: inherit;
+      }
+
+      #already-donated-link:hover {
+        color: #3b82f6;
+        border-bottom: 1px dotted #3b82f6;
+      }
+
+      /* --- Admin & Donor Dropdowns --- */
+      #admin-dropdown-container,
+      #donor-dropdown-container {
+        position: relative;
+      }
+
+      #admin-dropdown,
+      #donor-dropdown {
+        left: 0;
+        width: 220px;
+      }
+
+      /* --- Search & Replace Bar --- */
+      #search-bar {
+        background: #f0f0f0;
+        padding: 8px 15px;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      body.dark #search-bar {
+        background: #21222C;
+        border-bottom-color: #44475a;
+      }
+
+      #search-bar input {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 4px 6px;
+      }
+
+      body.dark #search-bar input {
+        background: #282a36;
+        border-color: #6272a4;
+        color: #f8f8f2;
+      }
+
+      #search-bar button {
+        padding: 4px 10px;
+        font-size: 16px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      body.dark #search-bar button {
+        background: #6272a4;
+        color: #f8f8f2;
+        border-color: #bd93f9;
+      }
+
+      #search-close-btn {
+        font-weight: bold;
+        background: none;
+        border: none;
+        font-size: 20px;
+        line-height: 1;
+        padding: 0 5px;
+        color: #555;
+        margin-left: auto;
+      }
+
+      body.dark #search-close-btn {
+        color: #f8f8f2;
+      }
+
+      #search-status {
+        font-size: 16px;
+        opacity: 0.8;
+        margin: 0 5px;
+      }
+
+      /* --- Admin-related Modal Styles --- */
+      .admin-modal {
+        max-width: 500px;
+      }
+
+      .admin-section {
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
+
+      body.dark .admin-section {
+        border-color: #44475a;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group select,
+      .form-group textarea {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: 'Figtree', sans-serif;
+      }
+
+      body.dark .form-group input[type="text"],
+      body.dark .form-group input[type="email"],
+      body.dark .form-group select,
+      body.dark .form-group textarea {
+        background-color: #44475a;
+        border-color: #6272a4;
+        color: #f8f8f2;
+      }
+
+      .form-group-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .admin-feedback {
+        font-size: 13px;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+        margin-top: 15px;
+      }
+
+      .admin-feedback.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      body.dark .admin-feedback.success {
+        background-color: #2a4b37;
+        color: #d1e7dd;
+        border-color: #50fa7b;
+      }
+
+      .admin-feedback.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      body.dark .admin-feedback.error {
+        background-color: #5a2d31;
+        color: #f8d7da;
+        border-color: #ff5555;
+      }
+
+      /* --- View Donors Modal --- */
+      #view-donors-modal {
+        max-width: 800px;
+        height: 80vh;
+      }
+
+      #donor-filters {
+        display: flex;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      body.dark #donor-filters {
+        border-bottom-color: #44475a;
+      }
+
+      #donor-filters .form-group {
+        flex-grow: 1;
+        margin-bottom: 0;
+      }
+
+      #donor-list-container {
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+
+      #donor-list-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      #donor-list-table th,
+      #donor-list-table td {
+        padding: 10px 8px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      body.dark #donor-list-table th,
+      body.dark #donor-list-table td {
+        border-bottom-color: #44475a;
+      }
+
+      #donor-list-table th {
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        background-color: #fff;
+      }
+
+      body.dark #donor-list-table th {
+        background-color: #282a36;
+      }
+
+      #donor-list-table tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      body.dark #donor-list-table tr:hover {
+        background-color: #44475a;
+      }
+
+      #donor-list-table .admin-status-yes {
+        color: #28a745;
+        font-weight: bold;
+      }
+
+      body.dark #donor-list-table .admin-status-yes {
+        color: #50fa7b;
+      }
+
+      .action-btn {
+        font-size: 16px;
+        padding: 4px 8px;
+      }
+
+      .action-btn.danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+      }
+
+      body.dark .action-btn.danger {
+        background-color: #5a2d31;
+        color: #f8d7da;
+        border-color: #ff5555;
+      }
+
+      .action-btn.approve {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+      }
+
+      body.dark .action-btn.approve {
+        background-color: #2a4b37;
+        color: #d1e7dd;
+        border-color: #50fa7b;
+      }
+
+      .action-btn.reject {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+      }
+
+      body.dark .action-btn.reject {
+        background-color: #5a2d31;
+        color: #f8d7da;
+        border-color: #ff5555;
+      }
+
+      /* --- Confirmation Modal --- */
+      #confirmation-modal,
+      #rejection-reason-modal {
+        max-width: 450px;
+        z-index: 4000;
+      }
+
+      #confirmation-modal .modal-body {
+        text-align: center;
+        font-size: 16px;
+      }
+
+      /* --- Insult Management Modal --- */
+      #insult-management-modal {
+        max-width: 1200px;
+        height: 85vh;
+      }
+
+      #insult-management-modal .modal-body {
+        grid-template-columns: 1fr 3fr;
+        gap: 20px;
+      }
+
+      .insult-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .insult-panel h3 {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+
+      body.dark .insult-panel h3 {
+        border-bottom-color: #44475a;
+      }
+
+      #insults-by-status-container {
+        overflow-y: auto;
+        flex-grow: 1;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      body.dark #insults-by-status-container {
+        border-color: #44475a;
+      }
+
+      #insults-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+      }
+
+      #insults-table th,
+      #insults-table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+      }
+
+      body.dark #insults-table th,
+      body.dark #insults-table td {
+        border-bottom-color: #44475a;
+      }
+
+      #insults-table th {
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        background-color: #f9f9f9;
+      }
+
+      body.dark #insults-table th {
+        background-color: #333545;
+      }
+
+      #insults-table .insult-text-cell {
+        min-width: 200px;
+        font-style: italic;
+      }
+
+      #insults-table .insult-actions-cell {
+        width: 150px;
+        text-align: center;
+      }
+
+      #insults-table .insult-actions-cell .action-btn {
+        margin: 2px;
+      }
+
+      /* --- Donor Modal Styles --- */
+      #submit-insult-modal {
+        max-width: 500px;
+      }
+
+      #my-submissions-modal {
+        max-width: 800px;
+        height: 70vh;
+      }
+
+      #my-submissions-container {
+        overflow-y: auto;
+        flex-grow: 1;
+      }
+
+      #my-submissions-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      #my-submissions-table th,
+      #my-submissions-table td {
+        padding: 10px 8px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      body.dark #my-submissions-table th,
+      body.dark #my-submissions-table td {
+        border-bottom-color: #44475a;
+      }
+
+      #my-submissions-table th {
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        background-color: #fff;
+      }
+
+      body.dark #my-submissions-table th {
+        background-color: #282a36;
+      }
+
+      .status-pending {
+        color: #ffc107;
+      }
+
+      .status-approved {
+        color: #28a745;
+      }
+
+      .status-rejected,
+      .status-rejected-duplicate {
+        color: #dc3545;
+      }
+
+      body.dark .status-pending {
+        color: #f1fa8c;
+      }
+
+      body.dark .status-approved {
+        color: #50fa7b;
+      }
+
+      body.dark .status-rejected,
+      body.dark .status-rejected-duplicate {
+        color: #ff5555;
+      }
+	  
+	  .announcement-body ul {
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+.announcement-body li {
+  margin-bottom: 5px;
+}
+
+.CodeMirror-gutters .bracket-guide-line {
+    width: 3px;
+    background-color: #50fa7b;
+    border-radius: 1px;
+    margin-left: 2px;
+}
+body.dark .CodeMirror-gutters .bracket-guide-line {
+    background-color: #50fa7b;
+}
+
+ #manual-save-modal {
+        max-width: 400px;
+      }
+
+/* ===== Snippy context pills ===== */
+.snippy-context-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.snippy-breadcrumb {
+  font-size: 16px;
+  font-weight: 600;
+}
+.snippy-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.snippy-pills .pill {
+  background: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+body.dark .snippy-pills .pill {
+  background: #44475a;
+  color: #f8f8f2;
+}
+
 
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="header">
-        <div class="snippy-brand">
-            <img src="snippy-logo.svg" class="snippy-logo">
-            <div class="snippy-brand-text">
-                <span class="main-name">Snippy</span>
-                <span class="sub-name">for Quickbase</span>
+      <div class="snippy-brand">
+        <img src="snippy-logo.svg" class="snippy-logo">
+        <div class="snippy-brand-text">
+          <span class="main-name">Snippy</span>
+          <span class="sub-name">for Quickbase</span>
+        </div>
+      </div>
+      <div class="control-group" id="field-helper">
+        <input type="text" id="field-search-input" placeholder="Search for a field...">
+        <div id="field-list-container"></div>
+      </div>
+      <div class="control-group">
+        <button id="show-functions-btn">Functions...</button>
+      </div>
+      <div id="snippy-context-label" class="snippy-context-label"></div>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+        <div class="control-group" id="snippy-toolbar-buttons">
+          <button id="beautify-toolbar-btn">✨ Beautify</button>
+          <button id="search-toolbar-btn">🔍 Search</button>
+		  <button id="user-guide-btn">📖 Snippy's User Guide</button>
+        </div>
+		  <div id="announcement-btn-wrapper" style="position: relative;">
+    <button id="announcement-btn">📢 Announcements</button>
+    <div id="announcement-indicator" style="
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+      display: none;
+    "></div>
+  </div>
+
+        <div class="control-group" id="settings-dropdown-container">
+          <button id="settings-btn">⚙️ Settings</button>
+          <div id="settings-dropdown" class="hidden dropdown-menu">
+            <div class="settings-row">
+              <label for="revision-target-selector">Storage Options:</label>
+              <select id="revision-target-selector"></select>
             </div>
-        </div>
-        
-        <div class="control-group" id="field-helper">
-            <input type="text" id="field-search-input" placeholder="Search for a field...">
-            <div id="field-list-container"></div>
-        </div>
-
-        <div class="control-group">
-            <button id="show-functions-btn">Functions...</button>
-        </div>
-
-        <!-- UPDATED: Right-aligned group for buttons -->
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
-            <div class="control-group" id="donor-dropdown-container">
-                <button id="donor-panel-btn" class="hidden">❤️ Donor</button>
-                <div id="donor-dropdown" class="hidden dropdown-menu">
-                    <button id="donor-submit-insult-btn">Submit a Comment</button>
-                    <button id="donor-view-submissions-btn">View My Submissions</button>
-
-<div class="dropdown-item" id="light-theme-container">
-    <span>Preferred Light Theme:</span>
-    <select id="light-theme-select"></select>
-</div>
-<div class="dropdown-item hidden" id="light-theme-message" style="font-size: 12px; color: #888; font-style: italic;">
-    Switch to Light Mode to change light theme.
-</div>
-
-<div class="dropdown-item" id="dark-theme-container">
-    <span>Preferred Dark Theme:</span>
-    <select id="dark-theme-select"></select>
-</div>
-<div class="dropdown-item hidden" id="dark-theme-message" style="font-size: 12px; color: #888; font-style: italic;">
-    Switch to Dark Mode to change dark theme.
-</div>
-
-                    <hr style="border-color: #ddd; margin: 5px 0;">
-                    <div class="dropdown-item">
-                        <span>Show Comments:</span>
-                        <input type="checkbox" id="show-comments-toggle">
-                    </div>
+            <div class="dropdown-item">
+              <button id="save-drive-btn" style="width: 100%;">💾 Create Backup</button>
+            </div>
+            <div class="dropdown-item revisions-control">
+              <button id="load-revisions-btn">🔄 Load Revisions</button>
+              <div id="revisions-placeholder"></div>
+              <select id="revisions-selector" class="hidden"></select>
+            </div>
+            <div class="dropdown-item">
+              <button id="gdrive-disconnect-btn" style="width: 100%;">Disconnect Google Drive</button>
+            </div>
+            <div class="dropdown-item">
+              <button id="onedrive-disconnect-btn" style="width: 100%;">Disconnect OneDrive</button>
+            </div>
+            <hr style="border-color: #ddd; margin: 0;">
+            <div class="dropdown-item">
+              <span>Font Size:</span>
+              <div class="control-group">
+                <button id="font-decrease-btn">-</button>
+                <button id="font-increase-btn">+</button>
+              </div>
+            </div>
+            <div class="dropdown-item">
+              <span>Theme:</span>
+              <select id="theme-selector">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+            <hr style="border-color: #ddd; margin: 0;">
+            <div class="dropdown-item">
+              <button id="feedback-btn" style="width: 100%;">💬 Send Feedback</button>
+            </div>
+            <div class="dropdown-item">
+              <button id="donate-btn" style="width: 100%;">☕ Donate</button>
+            </div>
+            <div class="dropdown-item" id="donor-panel-btn-container" style="display: none;">
+              <button id="donor-panel-btn" class="primary" style="width: 100%;">❤️ Donor Settings</button>
+              <div id="donor-dropdown" class="hidden dropdown-menu" style="margin-top: 6px;">
+                <button id="donor-submit-insult-btn">Submit a Freeloader Comment</button>
+                <button id="donor-view-submissions-btn">View My Submissions</button>
+                <div class="dropdown-item" id="light-theme-container">
+                  <span>Preferred Light Theme:</span>
+                  <select id="light-theme-select"></select>
                 </div>
-            </div>
-
-            <div class="control-group" id="admin-dropdown-container">
-                <button id="admin-panel-btn" class="hidden">👑 Admin</button>
-                <div id="admin-dropdown" class="hidden dropdown-menu">
-                    <button id="admin-add-user-btn">Manually Add User</button>
-                    <button id="admin-resend-code-btn">Resend Unlock Code</button>
-                    <button id="admin-view-donors-btn">View Donors</button>
-                    <button id="admin-manage-insults-btn">Manage Insults</button>
+                <div class="dropdown-item hidden" id="light-theme-message" style="font-size: 16px; color: #888; font-style: italic;"> Switch to Light Mode to change light theme. </div>
+                <div class="dropdown-item" id="dark-theme-container">
+                  <span>Preferred Dark Theme:</span>
+                  <select id="dark-theme-select"></select>
                 </div>
-            </div>
-
-            <div class="control-group" id="settings-dropdown-container">
-                <button id="settings-btn">⚙️ Settings</button>
-                <div id="settings-dropdown" class="hidden dropdown-menu">
-                    <div class="dropdown-item">
-                        <button id="save-drive-btn" style="width: 100%;">💾 Save to Google Drive</button>
-                    </div>
-                    <div class="dropdown-item revisions-control">
-                        <button id="load-revisions-btn">🔄 Load Revisions</button>
-                        <div id="revisions-placeholder"></div>
-                        <select id="revisions-selector" class="hidden"></select>
-                    </div>
-                    <hr style="border-color: #ddd; margin: 0;">
-                    <div class="dropdown-item">
-                        <span>Format Code:</span>
-                        <button id="beautify-btn">✨ Beautify</button>
-                    </div>
-                    <div class="dropdown-item">
-                        <span>Font Size:</span>
-                        <div class="control-group">
-                            <button id="font-decrease-btn">-</button>
-                            <button id="font-increase-btn">+</button>
-                        </div>
-                    </div>
-                    <div class="dropdown-item">
-                        <span>Theme:</span>
-                        <select id="theme-selector">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
-                    <hr style="border-color: #ddd; margin: 0;">
-                    <div class="dropdown-item">
-                        <button id="feedback-btn" style="width: 100%;">💬 Send Feedback</button>
-                    </div>
-                    <div class="dropdown-item">
-                        <button id="donate-btn" style="width: 100%;">☕ Donate</button>
-                    </div>
-
-                    <div class="dropdown-item" style="text-align: center;">
-                        <div id="donor-status-container" style="display:none; justify-content: center;">
-                        <span id="donor-status-badge" style="font-size: 13px;"></span>
-                        </div>
-
-                        <div id="already-donated-container">
-                            <a href="#" id="already-donated-link" style="font-size: 13px;">I already donated</a>
-                        </div>
-                    </div>
-
-                    <div class="dropdown-item" id="gdrive-toggle-container">
-                    <span>Google Drive:</span>
-                    <div class="control-group">
-                        <input type="checkbox" id="disable-gdrive-toggle">
-                        <label for="disable-gdrive-toggle">Disable</label>
-                    </div>
-                    </div>
+                <div class="dropdown-item hidden" id="dark-theme-message" style="font-size: 16px; color: #888; font-style: italic;"> Switch to Dark Mode to change dark theme. </div>
+                <hr style="border-color: #ddd; margin: 5px 0;">
+                <div class="dropdown-item">
+                  <span>Show Freeloader Comments:</span>
+                  <input type="checkbox" id="show-comments-toggle">
                 </div>
+              </div>
             </div>
+            <div class="dropdown-item" id="admin-panel-btn-container" style="display: none;">
+              <button id="admin-panel-btn" class="primary" style="width: 100%;">👑 Admin Settings</button>
+              <div id="admin-dropdown" class="hidden dropdown-menu" style="margin-top: 6px;">
+                <button id="admin-add-user-btn">Manually Add User</button>
+                <button id="admin-resend-code-btn">Resend Unlock Code</button>
+                <button id="admin-view-donors-btn">View Donors</button>
+                <button id="admin-manage-insults-btn">Manage Insults</button>
+				<button id="admin-manage-announcements-btn">Manage Announcements</button>
+              </div>
+            </div>
+            <div class="dropdown-item hidden" id="logged-in-user-container">
+              <span id="logged-in-user-label" style="font-size: 13px;"></span>
+              <p>
+                <button id="logout-btn" style="font-size: 13px;">Log Out</button>
+              </p>
+            </div>
+            <div class="dropdown-item" id="already-donated-container">
+              <a href="#" id="already-donated-link" style="font-size: 13px;">I already donated</a>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-
     <div id="search-bar" style="display: none;">
-        <input type="text" id="search-input" placeholder="Search">
-        <button id="find-prev-btn">&lt; Prev</button>
-        <button id="find-next-btn">Next &gt;</button>
-        <span id="search-status"></span>
-        <input type="text" id="replace-input" placeholder="Replace">
-        <button id="replace-btn">Replace</button>
-        <button id="replace-all-btn">Replace All</button>
-        <button id="search-close-btn">&times;</button>
+      <input type="text" id="search-input" placeholder="Search">
+      <button id="find-prev-btn">&lt; Prev</button>
+      <button id="find-next-btn">Next &gt;</button>
+      <span id="search-status"></span>
+      <input type="text" id="replace-input" placeholder="Replace">
+      <button id="replace-btn">Replace</button>
+      <button id="replace-all-btn">Replace All</button>
+      <button id="search-close-btn">&times;</button>
     </div>
-
     <div id="editor-container"></div>
-
-   <div id="footer">
-        <span id="font-size-display" style="margin-right: auto; color: #888; font-size: 12px;"></span>
-        <button id="cancel-btn">Cancel</button>
-        <button id="save-btn" class="primary">Save & Close</button>
+    <div id="footer">
+      <span id="font-size-display" style="margin-right: auto; color: #888; font-size: 16px;"></span>
+      <button id="cancel-btn">Cancel</button>
+      <button id="save-btn" class="primary">Backup & Close</button>
     </div>
-
     <div class="modal-overlay hidden"></div>
-    
-    <!-- All other modals are unchanged -->
+
     <div id="functions-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>Formula Functions</h2>
-            <button class="close-btn">&times;</button>
+      <div class="modal-header">
+        <h2>Formula Functions</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="function-list-wrapper">
+          <input type="text" id="function-search-input" placeholder="Search for a function...">
+          <div id="function-list-container"></div>
         </div>
-        <div class="modal-body">
-            <div id="function-list-wrapper">
-                <input type="text" id="function-search-input" placeholder="Search for a function...">
-                <div id="function-list-container"></div>
-            </div>
-            <div id="function-info-panel">
-                <h3>Signature</h3>
-                <div id="function-info-signature">Select a function...</div>
-                <h3>Description</h3>
-                <div id="function-info-description"></div>
-                <h3>Example</h3>
-                <pre id="function-info-example"></pre>
-            </div>
+        <div id="function-info-panel">
+          <h3>Signature</h3>
+          <div id="function-info-signature">Select a function...</div>
+          <h3>Description</h3>
+          <div id="function-info-description"></div>
+          <h3>Example</h3>
+          <pre id="function-info-example"></pre>
         </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Cancel</button>
-            <button id="modal-insert-btn" class="primary">Insert</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Cancel</button>
+        <button id="modal-insert-btn" class="primary">Insert</button>
+      </div>
     </div>
-
     <div id="add-user-modal" class="hidden modal admin-modal">
-        <div class="modal-header">
-            <h2>👑 Add New User</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="admin-section">
-                <div id="add-donor-form">
-                    <div class="form-group">
-                        <label for="add-donor-name">User Name</label>
-                        <input type="text" id="add-donor-name" placeholder="Justin Mason">
-                    </div>
-                    <div class="form-group">
-                        <label for="add-donor-email">User Email</label>
-                        <input type="email" id="add-donor-email" placeholder="user@example.com">
-                    </div>
-                    <div class="form-group-inline">
-                        <input type="checkbox" id="add-donor-is-admin">
-                        <label for="add-donor-is-admin">Promote to Admin</label>
-                    </div>
-                </div>
-                 <div id="add-user-feedback" class="admin-feedback"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Close</button>
-            <button id="add-donor-submit-btn" class="primary">Add User</button>
-        </div>
-    </div>
-
-    <div id="resend-code-modal" class="hidden modal admin-modal">
-        <div class="modal-header">
-            <h2>📩 Resend Unlock Code</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="admin-section">
-                <div class="form-group">
-                    <label for="resend-code-email">User Email</label>
-                    <input type="email" id="resend-code-email" placeholder="user@example.com">
-                </div>
-                <div id="resend-code-feedback" class="admin-feedback"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Close</button>
-            <button id="resend-code-submit-btn" class="primary">Send Email</button>
-        </div>
-    </div>
-
-    <div id="view-donors-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>👥 Donor List</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="donor-filters">
-                <div class="form-group">
-                    <label for="donor-search-input">Search</label>
-                    <input type="text" id="donor-search-input" placeholder="Search by name, email, or code...">
-                </div>
-                <div class="form-group">
-                    <label for="donor-admin-filter">Status</label>
-                    <select id="donor-admin-filter">
-                        <option value="all">All Users</option>
-                        <option value="admin">Admins Only</option>
-                        <option value="donor">Donors Only</option>
-                    </select>
-                </div>
-            </div>
-            <div id="donor-list-container"></div>
-            <div id="view-donors-feedback" class="admin-feedback"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Close</button>
-        </div>
-    </div>
-
-    <div id="confirmation-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2 id="confirmation-title">Are you sure?</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p id="confirmation-message">This action cannot be undone.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Cancel</button>
-            <button id="confirmation-confirm-btn" class="danger">Confirm</button>
-        </div>
-    </div>
-    
-    <div id="insult-management-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>🤬 Insult Management</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="insult-panel">
-                <h3>Add New Insult</h3>
-                <div class="admin-section">
-                    <div class="form-group">
-                        <label for="new-insult-text">Insult Text</label>
-                        <textarea id="new-insult-text" rows="4" placeholder="Your code looks like it was written by a committee of squirrels."></textarea>
-                    </div>
-                    <button id="add-insult-submit-btn" class="primary">Add & Approve Insult</button>
-                    <div id="add-insult-feedback" class="admin-feedback"></div>
-                </div>
-            </div>
-            <div class="insult-panel">
-                <h3>View Insults by Status</h3>
-                <div class="form-group">
-                    <label for="insult-status-filter">Status</label>
-                    <select id="insult-status-filter">
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="Rejected - Duplicate">Rejected - Duplicate</option>
-                    </select>
-                </div>
-                <div id="insults-by-status-container"></div>
-                <div id="insult-view-feedback" class="admin-feedback"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Close</button>
-        </div>
-    </div>
-
-    <div id="submit-insult-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>✍️ Submit a Comment</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
+      <div class="modal-header">
+        <h2>👑 Add New User</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-section">
+          <div id="add-donor-form">
             <div class="form-group">
-                <label for="donor-insult-text">Your Snarky Masterpiece</label>
-                <textarea id="donor-insult-text" rows="4" placeholder="This code is so dense, light bends around it."></textarea>
+              <label for="add-donor-name">User Name</label>
+              <input type="text" id="add-donor-name" placeholder="Justin Mason">
             </div>
             <div class="form-group">
-                <label for="donor-submitted-name">Your Name (for attribution)</label>
-                <input type="text" id="donor-submitted-name" placeholder="Anonymous">
+              <label for="add-donor-email">User Email</label>
+              <input type="email" id="add-donor-email" placeholder="user@example.com">
             </div>
             <div class="form-group-inline">
-                <input type="checkbox" id="donor-show-name" checked>
-                <label for="donor-show-name">Show my name publicly if approved</label>
+              <input type="checkbox" id="add-donor-is-admin">
+              <label for="add-donor-is-admin">Promote to Admin</label>
             </div>
-            <div id="submit-insult-feedback" class="admin-feedback"></div>
+          </div>
+          <div id="add-user-feedback" class="admin-feedback"></div>
         </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Cancel</button>
-            <button id="donor-insult-submit-btn" class="primary">Submit for Review</button>
-        </div>
+      
+	  </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
+        <button id="add-donor-submit-btn" class="primary">Add User</button>
+      </div>
     </div>
-
-    <div id="my-submissions-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>📜 My Submissions</h2>
-            <button class="close-btn">&times;</button>
+    <div id="resend-code-modal" class="hidden modal admin-modal">
+      <div class="modal-header">
+        <h2>📩 Resend Unlock Code</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-section">
+          <div class="form-group">
+            <label for="resend-code-email">User Email</label>
+            <input type="email" id="resend-code-email" placeholder="user@example.com">
+          </div>
+          <div id="resend-code-feedback" class="admin-feedback"></div>
         </div>
-        <div class="modal-body">
-            <div id="my-submissions-container"></div>
-            <div id="my-submissions-feedback" class="admin-feedback"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
+        <button id="resend-code-submit-btn" class="primary">Send Email</button>
+      </div>
     </div>
-
-    <div id="rejection-reason-modal" class="hidden modal">
-        <div class="modal-header">
-            <h2>Reject Submission</h2>
-            <button class="close-btn">&times;</button>
+    <div id="view-donors-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>👥 Donor List</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="donor-filters">
+          <div class="form-group">
+            <label for="donor-search-input">Search</label>
+            <input type="text" id="donor-search-input" placeholder="Search by name, email, or code...">
+          </div>
+          <div class="form-group">
+            <label for="donor-admin-filter">Status</label>
+            <select id="donor-admin-filter">
+              <option value="all">All Users</option>
+              <option value="admin">Admins Only</option>
+              <option value="donor">Donors Only</option>
+            </select>
+          </div>
         </div>
-        <div class="modal-body">
-            <p>Please provide a reason for rejection (optional, but helpful).</p>
+        <div id="donor-list-container"></div>
+        <div id="view-donors-feedback" class="admin-feedback"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
+      </div>
+    </div>
+    <div id="confirmation-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2 id="confirmation-title">Are you sure?</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmation-message">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Cancel</button>
+        <button id="confirmation-confirm-btn" class="danger">Confirm</button>
+      </div>
+    </div>
+    <div id="insult-management-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>🤬 Insult Management</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="insult-panel">
+          <h3>Add New Insult</h3>
+          <div class="admin-section">
             <div class="form-group">
-                <label for="rejection-reason-input">Rejection Reason</label>
-                <textarea id="rejection-reason-input" rows="3" placeholder="e.g., Not funny enough. Try harder."></textarea>
+              <label for="new-insult-text">Insult Text</label>
+              <div class="rich-text-toolbar">
+                <button id="bold-btn" type="button" title="Bold">
+                  <b>B</b>
+                </button>
+                <button id="italic-btn" type="button" title="Italic">
+                  <i>I</i>
+                </button>
+                <button id="underline-btn" type="button" title="Underline">
+                  <u>U</u>
+                </button>
+              </div>
+              <div class="rich-editor" contenteditable="true" id="new-insult-text"></div>
             </div>
+            <button id="add-insult-submit-btn" class="primary">Add & Approve Insult</button>
+            <div id="add-insult-feedback" class="admin-feedback"></div>
+          </div>
         </div>
-        <div class="modal-footer">
-            <button class="modal-cancel-btn">Cancel</button>
-            <button id="rejection-reason-submit-btn" class="danger">Reject</button>
+        <div class="insult-panel">
+          <h3>View Insults by Status</h3>
+          <div class="form-group">
+            <label for="insult-status-filter">Status</label>
+            <select id="insult-status-filter">
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="Rejected - Duplicate">Rejected - Duplicate</option>
+            </select>
+          </div>
+          <div id="insults-by-status-container"></div>
+          <div id="insult-view-feedback" class="admin-feedback"></div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
+      </div>
     </div>
+	
+	
+	
+	
+	
+	<div id="admin-announcement-modal" class="hidden modal admin-modal">
+  <div class="modal-header">
+    <h2>📣 Add Announcement</h2>
+    <button class="close-btn">&times;</button>
+  </div>
+  <div class="modal-body">
+    <div class="admin-section">
+      <div class="form-group">
+        <label for="announcement-title">Title</label>
+        <input type="text" id="announcement-title" placeholder="e.g., Snippy 1.2.0 Released!">
+      </div>
+      <div class="form-group">
+        <label for="announcement-body">Message</label>
+        <div class="rich-editor" contenteditable="true" id="announcement-body"></div>
+      </div>
+      <div class="form-group">
+        <label for="announcement-category">Category</label>
+        <select id="announcement-category">
+          <option value="update">Update</option>
+          <option value="news">News</option>
+          <option value="feature">Feature</option>
+        </select>
+      </div>
+      <div class="form-group-inline">
+        <label for="announcement-start">Start</label>
+        <input type="date" id="announcement-start">
+        <label for="announcement-end">End</label>
+        <input type="date" id="announcement-end">
+      </div>
+      <div id="announcement-feedback" class="admin-feedback"></div>
+    </div>
+	<div id="admin-announcement-list" style="max-height: 300px; overflow-y: auto; margin-top: 15px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-cancel-btn">Cancel</button>
+    <button id="announcement-submit-btn" class="primary">Create</button>
+  </div>
+</div>
 
+
+
+
+
+
+
+<div id="announcements-modal" class="hidden modal admin-modal">
+  <div class="modal-header">
+    <h2>📢 Announcements</h2>
+    <button class="close-btn">&times;</button>
+  </div>
+  <div class="modal-body" id="announcement-list-container">
+    <p>Loading announcements...</p>
+  </div>
+  <div class="modal-footer">
+    <button id="mark-all-read-btn" class="danger">Mark All Read</button>
+    <button class="modal-cancel-btn">Close</button>
+  </div>
+</div>
+
+    <div id="submit-insult-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>Submit a Freeloader Comment</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="donor-insult-text">Your Snarky Masterpiece</label>
+          <div class="rich-text-toolbar">
+            <button id="donor-bold-btn" type="button" title="Bold">
+              <b>B</b>
+            </button>
+            <button id="donor-italic-btn" type="button" title="Italic">
+              <i>I</i>
+            </button>
+            <button id="donor-underline-btn" type="button" title="Underline">
+              <u>U</u>
+            </button>
+          </div>
+          <div class="rich-editor" contenteditable="true" id="donor-insult-text"></div>
+        </div>
+        <div class="form-group">
+          <label for="donor-submitted-name">Your Name (for attribution)</label>
+          <input type="text" id="donor-submitted-name" placeholder="Anonymous">
+        </div>
+        <div class="form-group-inline">
+          <input type="checkbox" id="donor-show-name" checked>
+          <label for="donor-show-name">Show my name publicly if approved</label>
+        </div>
+        <div id="submit-insult-feedback" class="admin-feedback"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Cancel</button>
+        <button id="donor-insult-submit-btn" class="primary">Submit for Review</button>
+      </div>
+    </div>
+    <div id="my-submissions-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>📜 My Submissions</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="my-submissions-container"></div>
+        <div id="my-submissions-feedback" class="admin-feedback"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
+      </div>
+    </div>
+    <div id="rejection-reason-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>Reject Submission</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Please provide a reason for rejection (optional, but helpful).</p>
+        <div class="form-group">
+          <label for="rejection-reason-input">Rejection Reason</label>
+          <textarea id="rejection-reason-input" rows="3" placeholder="e.g., Not funny enough. Try harder."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Cancel</button>
+        <button id="rejection-reason-submit-btn" class="danger">Reject</button>
+      </div>
+    </div>
+	
+	
+	
+	
+	
+	<script src="config.js"></script>
     <script src="codemirror/codemirror.js"></script>
     <script src="codemirror/searchcursor.js"></script>
     <script src="codemirror/dialog.js"></script>
     <script src="codemirror/search.js"></script>
     <script src="lib/beautifier.bundle.js"></script>
-    <script src="codemirror/xml.js"></script> 
+    <script src="codemirror/xml.js"></script>
     <script src="codemirror/javascript.js"></script>
     <script src="codemirror/css.js"></script>
     <script src="codemirror/htmlmixed.js"></script>
-    <script src="codemirror/matchbrackets.js"></script>	
-    <script src="codemirror/lint.js"></script>	
+    <script src="codemirror/matchbrackets.js"></script>
+    <script src="codemirror/lint.js"></script>
     <script src="codemirror/jshint.min.js"></script>
     <script src="codemirror/javascript-lint.js"></script>
-
+    <script src="codemirror/show-hint.js"></script>
     <script src="qb-formula-mode.js"></script>
- 	<script src="formula-beautifier.js"></script>
+    <script src="formula-beautifier.js"></script>
     <script src="editor.js"></script>
-    <div id="unlock-modal" class="hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); z-index: 9999; width: 300px;">
-      <h3 style="margin-top: 0;">🔓 Unlock Snippy</h3>
-      <input type="email" id="unlock-email" placeholder="Email" style="width: 100%; margin-bottom: 10px; padding: 8px;">
-      <input type="text" id="unlock-code" placeholder="Unlock Code" style="width: 100%; margin-bottom: 15px; padding: 8px;">
-    <a href="#" id="retrieve-token-link" style="font-size: 12px; display: inline-block; margin-bottom: 10px;">📩 Retrieve my token</a>
-
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button id="unlock-cancel-btn">Cancel</button>
+	<div id="error-modal" class="hidden modal">
+  <div class="modal-header">
+    <h2>Hold Up There, Cowboy</h2>
+    <button class="close-btn">&times;</button>
+  </div>
+  <div class="modal-body">
+    <p id="error-modal-message">You've got errors that need fixing before I'll let you save this masterpiece.</p>
+  </div>
+  <div class="modal-footer">
+    <button id="error-modal-ok" class="primary">Got It</button>
+  </div>
+</div>
+    <div id="unlock-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>🔓 Unlock Snippy</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="unlock-email">Email</label>
+          <input type="email" id="unlock-email" placeholder="Email">
+        </div>
+        <div class="form-group">
+          <label for="unlock-code">Unlock Code</label>
+          <input type="text" id="unlock-code" placeholder="Unlock Code">
+        </div>
+        <a href="#" id="retrieve-token-link" style="font-size: 16px; display: inline-block;">📩 Retrieve my token</a>
+        <div id="unlock-error" class="admin-feedback error"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Cancel</button>
         <button id="unlock-submit-btn" class="primary">Submit</button>
       </div>
-      <div id="unlock-error" style="color: red; font-size: 12px; margin-top: 10px; display: none;"></div>
     </div>
+    <div id="freeloader-insult" class="hidden insult-toast"></div>
+	<button id="admin-create-announcement-btn" style="display: none;"></button>
+	
+	<div id="manual-save-modal" class="hidden modal">
+  <div class="modal-header">
+    <h2>💾 Confirm Manual Backup</h2>
+    <button class="close-btn">&times;</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size: 16px;">Are you sure you want to backup now? Snippy already creates backups for you automatically.</p>
+    <div class="form-group">
+      <label for="manual-filename-input">Optional File Name:</label>
+      <input type="text" id="manual-filename-input" placeholder="e.g. Refactored Loop Fix">
+      <p style="font-size: 16px; opacity: 0.7; margin-top: 4px;">(We'll add ".txt" if you forget.)</p>
+    </div>
+    <div id="manual-save-error" class="admin-feedback error" style="display: none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button id="manual-save-cancel-btn" class="modal-cancel-btn">Cancel</button>
+    <button id="manual-save-confirm-btn" class="primary">Save</button>
+  </div>
+</div>
 
-</body>
+
+  </body>
 </html>

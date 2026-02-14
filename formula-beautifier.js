@@ -1,3 +1,7 @@
+if (!window.SNIPPY_DEBUG_MODE) {
+  console.log = console.info = console.debug = console.warn = () => {};
+}
+
 /**
  * formula-beautifier.js
  * A context-aware beautifier for Quickbase formulas. This version implements a hierarchical
@@ -39,6 +43,8 @@ function tokenize(formulaString, keywordList) {
         /(?<LPAREN>\()/,
         /(?<RPAREN>\))/,
         /(?<COMMA>,)/,
+		/(?<VARIABLE>\$[A-Za-z_][A-Za-z0-9_]*)/,
+		/(?<FIELD>\[[^\]\n]+\])/,
         /(?<IDENTIFIER>[a-zA-Z_]\w*)/,
         /(?<WHITESPACE>\s+)/,
         /(?<MISMATCH>.)/
@@ -94,17 +100,38 @@ function getFunctionArgCount(tokens, startIndex) {
  * @returns {string} The beautified formula.
  */
 function beautifyFormula(codeString, functions) {
-    const lines = codeString.split('\n');
-    const preservedLines = [];
-    let codeToProcess = lines.map((line, index) => {
-        const trimmedLine = line.trim();
-        if (trimmedLine.toLowerCase().startsWith('var ') || trimmedLine.startsWith('//')) {
-            const placeholder = `//__PLACEHOLDER_${index}__`;
-            preservedLines.push({ placeholder, original: line });
-            return placeholder;
-        }
-        return line;
-    }).join('\n');
+    // 1) Preserve multi-line var declarations as atomic blocks until their ending semicolon.
+const preservedVarBlocks = [];
+let codeToProcess = codeString.replace(/(^\s*var\b[\s\S]*?;)/gmi, (match) => {
+  const placeholder = `//__VARBLOCK_${preservedVarBlocks.length}__`;
+  preservedVarBlocks.push({ placeholder, original: match });
+  return placeholder;
+});
+
+// 2) Preserve full-line comments (keeps your existing comment behavior).
+const preservedCommentLines = [];
+codeToProcess = codeToProcess
+  .split('\n')
+  .map((line, index) => {
+    const trimmedLine = line.trim();
+
+    // ⛔ IMPORTANT: Do NOT re-preserve our own var-block placeholders as comments.
+    if (trimmedLine.startsWith('//__VARBLOCK_')) {
+      return line; // leave the placeholder alone; it will be restored from preservedVarBlocks
+    }
+
+    // Preserve only true full-line comments.
+    if (trimmedLine.startsWith('//')) {
+      const placeholder = `//__COMMENT_${index}__`;
+      preservedCommentLines.push({ placeholder, original: line });
+      return placeholder;
+    }
+
+    return line;
+  })
+  .join('\n');
+
+
 
     const tokens = tokenize(codeToProcess, functions);
     if (tokens.length === 0) return codeString;
@@ -127,6 +154,18 @@ function beautifyFormula(codeString, functions) {
         let currentContext = getCurrentContext();
 
         switch (token.type) {
+			case 'STRING':
+  // Preserve quoted text exactly as written (supports escaped quotes).
+  formattedCode += token.value;
+  break;
+
+case 'NUMBER':
+case 'LITERAL':
+case 'IDENTIFIER':
+  // Print numbers (e.g., 5), literals (true/false/null), and bare identifiers (e.g., URLRoot, AppID).
+  formattedCode += token.value;
+  break;
+
             case 'KEYWORD':
                 formattedCode += token.value;
                 if (nextToken && nextToken.type === 'LPAREN') {
@@ -140,6 +179,13 @@ function beautifyFormula(codeString, functions) {
                     });
                 }
                 break;
+				
+			case 'VARIABLE':
+case 'FIELD':
+  // Output $vars and [Field Names] verbatim
+  formattedCode += token.value;
+  break;
+
 
             case 'LPAREN':
                 formattedCode += token.value;
@@ -179,11 +225,10 @@ function beautifyFormula(codeString, functions) {
 
             case 'OPERATOR':
                 if (token.value === '&' && isLongChain && !currentContext) {
-                    // NEW LOGIC: Look ahead to decide whether to break the line.
+                    
                     let shouldBreak = true;
                     if (nextToken && (nextToken.type === 'FIELD' || nextToken.type === 'VARIABLE')) {
-                        // If the ampersand is followed by a field or variable, it's likely a key-value
-                        // pair that should stay on the same line as the key.
+                        
                         shouldBreak = false;
                     }
 
@@ -193,24 +238,28 @@ function beautifyFormula(codeString, functions) {
                         formattedCode = formattedCode.trimEnd() + ' & ';
                     }
                 } else {
-                    // Default spacing for all other operators or ampersands inside functions.
+                    
                     formattedCode = formattedCode.trimEnd() + ' ' + token.value + ' ';
                 }
                 break;
             
-            case 'COMMENT':
-                const preserved = preservedLines.find(p => token.value.includes(p.placeholder));
-                 if (preserved) {
-                    if (formattedCode.length > 0 && !formattedCode.endsWith('\n')) {
-                        formattedCode = formattedCode.trimEnd() + '\n';
-                    }
-                    formattedCode += indentString.repeat(indentationLevel) + preserved.original.trim() + '\n';
-                }
-                break;
+            case 'COMMENT': {
+    // Try to restore a preserved var-block first, then a preserved comment line.
+    const preserved =
+      preservedVarBlocks.find(p => token.value.includes(p.placeholder)) ||
+      preservedCommentLines.find(p => token.value.includes(p.placeholder));
 
-            default:
-                formattedCode += token.value;
-                break;
+    if (preserved) {
+      if (formattedCode.length > 0 && !formattedCode.endsWith('\n')) {
+        formattedCode = formattedCode.trimEnd() + '\n';
+      }
+      // Reinsert exactly what we captured (including any internal newlines and the trailing semicolon for var-blocks).
+      formattedCode += indentString.repeat(indentationLevel) + preserved.original.replace(/\s+$/, '') + '\n';
+    }
+    break;
+}
+
+                 
         }
     }
 
