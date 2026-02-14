@@ -258,6 +258,37 @@ async function scheduleApplyFinalize(tabId, ms = APPLY_FINALIZE_DELAY_MS) {
   snippyApplyFinalizeTimers.set(tabId, timerId);
 }
 
+async function openAndFocusReturnTab(tabId, pending) {
+  const createOptions = {
+    url: pending.returnUrl,
+    active: true
+  };
+
+  if (typeof pending.sourceWindowId === 'number') createOptions.windowId = pending.sourceWindowId;
+  if (typeof pending.sourceIndex === 'number') createOptions.index = pending.sourceIndex + 1;
+
+  try {
+    const createdTab = await chrome.tabs.create(createOptions);
+    logApply('opened return URL in new focused tab', {
+      tabId,
+      returnUrl: pending.returnUrl,
+      createdTabId: createdTab?.id,
+      createOptions
+    });
+    return true;
+  } catch (createError) {
+    logApply('failed creating return tab; falling back to updating current tab', {
+      tabId,
+      returnUrl: pending.returnUrl,
+      error: createError?.message || String(createError)
+    });
+  }
+
+  await chrome.tabs.update(tabId, { url: pending.returnUrl, active: true });
+  logApply('focused current tab at return URL', { tabId, returnUrl: pending.returnUrl });
+  return true;
+}
+
 function scheduleApplyAutoExpire(tabId, ms = 20000) {
   setTimeout(() => {
     // If still pending after 20s, clear it to avoid accidental future bounces
@@ -375,7 +406,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
     try {
       logApply('left edit context; forcing bounce back to return URL', { tabId, returnUrl: pending.returnUrl });
-      await chrome.tabs.update(tabId, { url: pending.returnUrl });
+      await openAndFocusReturnTab(tabId, pending);
       await clearSnippyApplyPending(tabId);
     } catch (error) {
       // Tab may have been closed between onUpdated and update().
