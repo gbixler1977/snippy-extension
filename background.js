@@ -1,6 +1,7 @@
 
 console.log("--- Snippy Background Script (GDrive & Cleanup Enabled) has started ---");
 
+import { addLocalRevision } from './RevisionStore.js';
 import RevisionStore from './revisionstore.js';
 import { addLocalRevision } from './revisionstore.js';
 let oneDriveAccessToken = null;
@@ -13,7 +14,7 @@ const oneDriveScopes = 'Files.ReadWrite offline_access';
 
 async function getOneDriveAuthorizationCode() {
   const codeVerifier = generateCodeVerifier();
-  
+
   await chrome.storage.local.set({ oneDriveCodeVerifier: codeVerifier });
 
   const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -188,6 +189,8 @@ async function _saveToOneDrive(code, metadata) {
     return await saveToOneDrive(code, metadata, ""); 
 }
 
+// --- Snippy Apply (Formula) — background bounce controller ---
+const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt }
 // --- Persist pending Apply across MV3 service-worker sleeps ---
 const APPLY_KEY = (tabId) => `snippy:apply:${tabId}`;
 
@@ -273,6 +276,14 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   }
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
     snippyApplyPending.delete(sender.tab.id);
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
+  
+});
+  if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
+    snippyApplyPending.delete(sender.tab.id);
     clearPendingFromSession(sender.tab.id);
     sendResponse && sendResponse({ ok: true });
     return true;
@@ -290,12 +301,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (!changeInfo.url) return;
 
   (async () => {
-    // Get pending from memory, or recover it from session storage if the SW slept
-    let pending = snippyApplyPending.get(tabId);
-    if (!pending) {
-      pending = await loadPendingFromSession(tabId);
-      if (pending) snippyApplyPending.set(tabId, pending);
-    }
+    const pending = snippyApplyPending.get(tabId);
     // ... inside chrome.tabs.onUpdated.addListener
     if (!pending) return;
 
@@ -306,6 +312,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // our job is done. Just clear the pending state and stop.
     if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
       // (Ignoring hash just in case)
+      snippyApplyPending.delete(tabId);
+      return;
+    }
+    if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
+      // (Ignoring hash just in case)
       clearSnippyApplyPending(tabId);
       return;
     }
@@ -314,6 +325,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // Still in a *different* edit-like context? (e.g., a reload) → keep waiting.
     if (isEditLike(navigatedUrl)) return;
 
+    // Left edit context → successful save → bounce back to canonical mf URL we stored.
+    snippyApplyPending.delete(tabId);
+    chrome.tabs.update(tabId, { url: pending.returnUrl });
+  })();
+});
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
     clearSnippyApplyPending(tabId);
     chrome.tabs.update(tabId, { url: pending.returnUrl });
@@ -353,19 +369,6 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     switch(request.action) {
-		
-		case 'snippyApplyBegin':
-  // noop here; handled by the top-level listener above when it set the Map,
-  // but respond OK to keep the sender happy
-  sendResponse && sendResponse({ ok: true });
-  break;
-
-case 'snippyApplyCancel':
-  // Also handled above; reply OK
-  sendResponse && sendResponse({ ok: true });
-  break;
-
-		
         case "openEditor":
             handleOpenEditor(request, sender);
             break;
@@ -1334,4 +1337,5 @@ async function driveFetch(url, token, method = 'GET', headers = {}, body = undef
         throw new Error(`Google Drive API Error (${response.status}): ${errorBody}`);
     }
     return response;
+}
 }
