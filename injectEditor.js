@@ -774,7 +774,13 @@ window.addEventListener('message', (ev) => {
   const hdr = el.querySelector('.snippy-overlay__header');
   const headerH = hdr ? hdr.getBoundingClientRect().height : 0;
   const targetH = targetEl.getBoundingClientRect().height;
-  const desired = Math.max(targetH, headerH + (Number(d.height) || 0));
+  const reportedContentH = headerH + (Number(d.height) || 0);
+
+  // On formula editors, keep the overlay tightly aligned to the native editor
+  // so we do not cover the "Fix my formula" link that sits immediately below.
+  const isFormulaTarget = targetEl && (targetEl.id === 'fexpr_aceEditor' || targetEl.id === 'tlvFormula_aceEditor');
+  const maxExtra = isFormulaTarget ? 2 : Number.POSITIVE_INFINITY;
+  const desired = Math.max(targetH, Math.min(reportedContentH, targetH + maxExtra));
   
 
   const now = performance.now();

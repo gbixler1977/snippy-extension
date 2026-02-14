@@ -1,8 +1,8 @@
 
 console.log("--- Snippy Background Script (GDrive & Cleanup Enabled) has started ---");
 
-import RevisionStore from './RevisionStore.js';
-import { addLocalRevision } from './RevisionStore.js';
+import RevisionStore from './revisionstore.js';
+import { addLocalRevision } from './revisionstore.js';
 let oneDriveAccessToken = null;
 let oneDriveTokenTimestamp = null;
 
@@ -263,27 +263,17 @@ function isEditLike(u) {
 // 1) Accept "begin" and "cancel" from the content script
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   if (req?.action === 'snippyApplyBegin' && sender?.tab?.id) {
-    setSnippyApplyPending(sender.tab.id, {
-      returnUrl: req.returnUrl,
-      startedAt: Date.now(),
-      sourceWindowId: sender.tab.windowId,
-      sourceIndex: sender.tab.index
-    });
-
-    scheduleApplyAutoExpire(sender.tab.id);
+    const pending = { returnUrl: req.returnUrl, startedAt: Date.now() };
+    snippyApplyPending.set(sender.tab.id, pending);
+	savePendingToSession(sender.tab.id, pending);
+	scheduleApplyAutoExpire(sender.tab.id);
 
     sendResponse && sendResponse({ ok: true });
     return true;
   }
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
-    clearSnippyApplyPending(sender.tab.id);
-    sendResponse && sendResponse({ ok: true });
-    return true;
-  }
-  
-  else if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
-    // Clear both the in-memory Map and the session mirror
-    clearSnippyApplyPending(sender.tab.id);
+    snippyApplyPending.delete(sender.tab.id);
+    clearPendingFromSession(sender.tab.id);
     sendResponse && sendResponse({ ok: true });
     return true;
   }
