@@ -147,12 +147,18 @@ const QB_SAVE_SELECTORS = {
   
   function snippyExpandFormulaEditorIfPossible() {
   try {
-    // Typical selector: <a class="FormulaBuilderResizer Icon FullscreenIcon Tipsified" ...>
-    const btn = document.querySelector('a.FormulaBuilderResizer.FullscreenIcon');
-    if (btn && btn.offsetParent !== null) {
-      btn.click();
-      // Give layout a moment to expand before we position the overlay
-      return new Promise(res => setTimeout(res, 120));
+    // Quickbase swaps FullscreenIcon -> ExitFullscreenIcon when expanded.
+    // We only click when the editor is not already expanded.
+    const expandedBtn = document.querySelector('a.FormulaBuilderResizer.ExitFullscreenIcon');
+    if (expandedBtn && expandedBtn.offsetParent !== null) {
+      return Promise.resolve();
+    }
+
+    const expandBtn = document.querySelector('a.FormulaBuilderResizer.FullscreenIcon');
+    if (expandBtn && expandBtn.offsetParent !== null) {
+      expandBtn.click();
+      // Give Quickbase layout a moment to settle to its built-in max size.
+      return new Promise(res => setTimeout(res, 160));
     }
   } catch {}
   return Promise.resolve();
@@ -1465,9 +1471,15 @@ window.addEventListener('message', (ev) => {
 
   const hdr = el.querySelector('.snippy-overlay__header');
   const headerH = hdr ? hdr.getBoundingClientRect().height : 0;
-  const desired = headerH + (Number(d.height) || 0);
+  const reported = headerH + (Number(d.height) || 0);
 
-  el.style.height = `${desired}px`;
+  // Keep formula overlays pinned to Quickbase's own expanded editor size.
+  // This avoids runaway growth on long formulas while still using QB max height.
+  const formulaHost = document.getElementById('fexpr_aceEditor') || document.getElementById('tlvFormula_aceEditor');
+  const maxFormulaHeight = formulaHost ? formulaHost.getBoundingClientRect().height : 0;
+  const desired = maxFormulaHeight > 0 ? Math.min(reported, maxFormulaHeight + 2) : reported;
+
+  el.style.height = `${Math.max(0, desired)}px`;
 
   // Make sure the new bottom is visible
   try {
