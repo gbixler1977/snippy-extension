@@ -188,7 +188,8 @@ async function _saveToOneDrive(code, metadata) {
 }
 
 // --- Snippy Apply (Formula) — background bounce controller ---
-const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex }
+const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex, landedAtReturnUrlAt? }
+const snippyApplyFinalizeTimers = new Map(); // tabId -> timeoutId
 // --- Persist pending Apply across MV3 service-worker sleeps ---
 const APPLY_KEY = (tabId) => `snippy:apply:${tabId}`;
 
@@ -219,8 +220,25 @@ async function setSnippyApplyPending(tabId, pending) {
 }
 
 async function clearSnippyApplyPending(tabId) {
+  const finalizeTimer = snippyApplyFinalizeTimers.get(tabId);
+  if (finalizeTimer) {
+    clearTimeout(finalizeTimer);
+    snippyApplyFinalizeTimers.delete(tabId);
+  }
   snippyApplyPending.delete(tabId);
   await clearPendingFromSession(tabId);
+}
+
+async function scheduleApplyFinalize(tabId, ms = 3000) {
+  const existingTimer = snippyApplyFinalizeTimers.get(tabId);
+  if (existingTimer) clearTimeout(existingTimer);
+
+  const timerId = setTimeout(async () => {
+    snippyApplyFinalizeTimers.delete(tabId);
+    await clearSnippyApplyPending(tabId);
+  }, ms);
+
+  snippyApplyFinalizeTimers.set(tabId, timerId);
 }
 
 function scheduleApplyAutoExpire(tabId, ms = 20000) {
@@ -311,7 +329,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // our job is done. Just clear the pending state and stop.
     if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
       // (Ignoring hash just in case)
-      await clearSnippyApplyPending(tabId);
+      // Keep pending briefly in case Quickbase immediately closes this tab.
+      // onRemoved will then reopen the target URL in a new tab.
+      pending = { ...pending, landedAtReturnUrlAt: Date.now() };
+      await setSnippyApplyPending(tabId, pending);
+      await scheduleApplyFinalize(tabId);
       return;
     }
     // -----------------------------------------------------------
