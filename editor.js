@@ -1767,7 +1767,7 @@ document.getElementById('manual-save-confirm-btn')?.addEventListener('click', as
   saveDriveBtn.textContent = 'Saving...';
 
   try {
-    const { default: RevisionStore } = await import(chrome.runtime.getURL('RevisionStore.js'));
+    const { default: RevisionStore } = await import(chrome.runtime.getURL('revisionstore.js'));
     const currentCode = cmEditor.getValue();
 
     // 🔧 Normalize KeyProps → treat as formula for revision keys
@@ -2688,7 +2688,7 @@ document.getElementById('manual-save-confirm-btn')?.addEventListener('click', as
     try {
       const {
         default: RevisionStore
-      } = await import(chrome.runtime.getURL('RevisionStore.js'));
+      } = await import(chrome.runtime.getURL('revisionstore.js'));
       const currentCode = cmEditor.getValue();
 	  const metaForSave = (pageMetadata?.type === 'keyprops')
   ? { ...pageMetadata, type: 'formula', fieldId: 'KeyProps' }
@@ -2935,7 +2935,7 @@ document.getElementById('manual-save-confirm-btn')?.addEventListener('click', as
     try {
       const {
         default: RevisionStore
-      } = await import(chrome.runtime.getURL('RevisionStore.js'));
+      } = await import(chrome.runtime.getURL('revisionstore.js'));
       const targetResult = await chrome.storage.sync.get('revisionSaveTarget');
       const target = targetResult.revisionSaveTarget || 'local';
       console.log("%cMANUAL LOAD METADATA:", "color: green; font-weight: bold;", pageMetadata);
@@ -2999,7 +2999,7 @@ document.getElementById('manual-save-confirm-btn')?.addEventListener('click', as
     try {
       const {
         default: RevisionStore
-      } = await import(chrome.runtime.getURL('RevisionStore.js'));
+      } = await import(chrome.runtime.getURL('revisionstore.js'));
       const targetResult = await chrome.storage.sync.get('revisionSaveTarget');
       const target = targetResult.revisionSaveTarget || 'local';
 	  

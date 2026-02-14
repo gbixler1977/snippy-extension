@@ -1,9 +1,7 @@
 
 console.log("--- Snippy Background Script (GDrive & Cleanup Enabled) has started ---");
 
-import { addLocalRevision } from './RevisionStore.js';
-import RevisionStore from './revisionstore.js';
-import { addLocalRevision } from './revisionstore.js';
+import RevisionStore, { addLocalRevision } from './revisionstore.js';
 let oneDriveAccessToken = null;
 let oneDriveTokenTimestamp = null;
 
@@ -190,7 +188,7 @@ async function _saveToOneDrive(code, metadata) {
 }
 
 // --- Snippy Apply (Formula) — background bounce controller ---
-const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt }
+const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex }
 // --- Persist pending Apply across MV3 service-worker sleeps ---
 const APPLY_KEY = (tabId) => `snippy:apply:${tabId}`;
 
@@ -198,7 +196,9 @@ async function loadPendingFromSession(tabId) {
   try {
     const obj = await chrome.storage.session.get(APPLY_KEY(tabId));
     return obj[APPLY_KEY(tabId)] || null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function savePendingToSession(tabId, data) {
@@ -212,10 +212,6 @@ async function clearPendingFromSession(tabId) {
     await chrome.storage.session.remove(APPLY_KEY(tabId));
   } catch {}
 }
-
-
-// --- Snippy Apply (Formula) — background bounce controller ---
-const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex }
 
 function setSnippyApplyPending(tabId, pending) {
   snippyApplyPending.set(tabId, pending);
@@ -266,30 +262,23 @@ function isEditLike(u) {
 // 1) Accept "begin" and "cancel" from the content script
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   if (req?.action === 'snippyApplyBegin' && sender?.tab?.id) {
-    const pending = { returnUrl: req.returnUrl, startedAt: Date.now() };
-    snippyApplyPending.set(sender.tab.id, pending);
-	savePendingToSession(sender.tab.id, pending);
-	scheduleApplyAutoExpire(sender.tab.id);
+    const pending = {
+      returnUrl: req.returnUrl,
+      startedAt: Date.now(),
+      sourceWindowId: sender.tab.windowId,
+      sourceIndex: sender.tab.index
+    };
+    setSnippyApplyPending(sender.tab.id, pending);
+    scheduleApplyAutoExpire(sender.tab.id);
 
     sendResponse && sendResponse({ ok: true });
     return true;
   }
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
-    snippyApplyPending.delete(sender.tab.id);
+    clearSnippyApplyPending(sender.tab.id);
     sendResponse && sendResponse({ ok: true });
     return true;
   }
-
-  
-});
-  if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
-    snippyApplyPending.delete(sender.tab.id);
-    clearPendingFromSession(sender.tab.id);
-    sendResponse && sendResponse({ ok: true });
-    return true;
-  }
-
-  
 });
 
 
@@ -301,8 +290,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (!changeInfo.url) return;
 
   (async () => {
-    const pending = snippyApplyPending.get(tabId);
-    // ... inside chrome.tabs.onUpdated.addListener
+    let pending = snippyApplyPending.get(tabId);
+    if (!pending) {
+      pending = await loadPendingFromSession(tabId);
+      if (pending) setSnippyApplyPending(tabId, pending);
+    }
     if (!pending) return;
 
     const navigatedUrl = changeInfo.url;
@@ -310,11 +302,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // --- FIX: Check for successful navigation TO the return URL ---
     // If QB's save navigates us *exactly* to our target URL,
     // our job is done. Just clear the pending state and stop.
-    if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
-      // (Ignoring hash just in case)
-      snippyApplyPending.delete(tabId);
-      return;
-    }
     if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
       // (Ignoring hash just in case)
       clearSnippyApplyPending(tabId);
@@ -325,11 +312,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // Still in a *different* edit-like context? (e.g., a reload) → keep waiting.
     if (isEditLike(navigatedUrl)) return;
 
-    // Left edit context → successful save → bounce back to canonical mf URL we stored.
-    snippyApplyPending.delete(tabId);
-    chrome.tabs.update(tabId, { url: pending.returnUrl });
-  })();
-});
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
     clearSnippyApplyPending(tabId);
     chrome.tabs.update(tabId, { url: pending.returnUrl });
