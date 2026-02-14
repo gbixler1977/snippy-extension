@@ -2,6 +2,8 @@
 console.log("--- Snippy Background Script (GDrive & Cleanup Enabled) has started ---");
 
 import { addLocalRevision } from './RevisionStore.js';
+import RevisionStore from './revisionstore.js';
+import { addLocalRevision } from './revisionstore.js';
 let oneDriveAccessToken = null;
 let oneDriveTokenTimestamp = null;
 
@@ -12,7 +14,7 @@ const oneDriveScopes = 'Files.ReadWrite offline_access';
 
 async function getOneDriveAuthorizationCode() {
   const codeVerifier = generateCodeVerifier();
-  
+
   await chrome.storage.local.set({ oneDriveCodeVerifier: codeVerifier });
 
   const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -189,10 +191,46 @@ async function _saveToOneDrive(code, metadata) {
 
 // --- Snippy Apply (Formula) — background bounce controller ---
 const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt }
+// --- Persist pending Apply across MV3 service-worker sleeps ---
+const APPLY_KEY = (tabId) => `snippy:apply:${tabId}`;
+
+async function loadPendingFromSession(tabId) {
+  try {
+    const obj = await chrome.storage.session.get(APPLY_KEY(tabId));
+    return obj[APPLY_KEY(tabId)] || null;
+  } catch { return null; }
+}
+
+async function savePendingToSession(tabId, data) {
+  try {
+    await chrome.storage.session.set({ [APPLY_KEY(tabId)]: data });
+  } catch {}
+}
+
+async function clearPendingFromSession(tabId) {
+  try {
+    await chrome.storage.session.remove(APPLY_KEY(tabId));
+  } catch {}
+}
+
+
+// --- Snippy Apply (Formula) — background bounce controller ---
+const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex }
+
+function setSnippyApplyPending(tabId, pending) {
+  snippyApplyPending.set(tabId, pending);
+  savePendingToSession(tabId, pending);
+}
+
+function clearSnippyApplyPending(tabId) {
+  snippyApplyPending.delete(tabId);
+  clearPendingFromSession(tabId);
+}
+
 function scheduleApplyAutoExpire(tabId, ms = 20000) {
   setTimeout(() => {
     // If still pending after 20s, clear it to avoid accidental future bounces
-    snippyApplyPending.delete(tabId);
+    clearSnippyApplyPending(tabId);
   }, ms);
 }
 
@@ -228,7 +266,9 @@ function isEditLike(u) {
 // 1) Accept "begin" and "cancel" from the content script
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   if (req?.action === 'snippyApplyBegin' && sender?.tab?.id) {
-    snippyApplyPending.set(sender.tab.id, { returnUrl: req.returnUrl, startedAt: Date.now() });
+    const pending = { returnUrl: req.returnUrl, startedAt: Date.now() };
+    snippyApplyPending.set(sender.tab.id, pending);
+	savePendingToSession(sender.tab.id, pending);
 	scheduleApplyAutoExpire(sender.tab.id);
 
     sendResponse && sendResponse({ ok: true });
@@ -236,6 +276,15 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   }
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
     snippyApplyPending.delete(sender.tab.id);
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
+  
+});
+  if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
+    snippyApplyPending.delete(sender.tab.id);
+    clearPendingFromSession(sender.tab.id);
     sendResponse && sendResponse({ ok: true });
     return true;
   }
@@ -266,6 +315,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       snippyApplyPending.delete(tabId);
       return;
     }
+    if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
+      // (Ignoring hash just in case)
+      clearSnippyApplyPending(tabId);
+      return;
+    }
     // -----------------------------------------------------------
 
     // Still in a *different* edit-like context? (e.g., a reload) → keep waiting.
@@ -274,6 +328,35 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
     snippyApplyPending.delete(tabId);
     chrome.tabs.update(tabId, { url: pending.returnUrl });
+  })();
+});
+    // Left edit context → successful save → bounce back to canonical mf URL we stored.
+    clearSnippyApplyPending(tabId);
+    chrome.tabs.update(tabId, { url: pending.returnUrl });
+  })();
+});
+
+// Some Quickbase flows (notably new forms) close the settings tab after Save.
+// If that happens during a Snippy Apply, reopen the target field editor in a new tab.
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  (async () => {
+    let pending = snippyApplyPending.get(tabId);
+    if (!pending) {
+      pending = await loadPendingFromSession(tabId);
+      if (!pending) return;
+    }
+
+    clearSnippyApplyPending(tabId);
+
+    const createOptions = { url: pending.returnUrl, active: true };
+    if (typeof pending.sourceWindowId === 'number') createOptions.windowId = pending.sourceWindowId;
+    if (typeof pending.sourceIndex === 'number') createOptions.index = pending.sourceIndex;
+
+    try {
+      await chrome.tabs.create(createOptions);
+    } catch {
+      await chrome.tabs.create({ url: pending.returnUrl, active: true });
+    }
   })();
 });
 
@@ -1254,4 +1337,5 @@ async function driveFetch(url, token, method = 'GET', headers = {}, body = undef
         throw new Error(`Google Drive API Error (${response.status}): ${errorBody}`);
     }
     return response;
+}
 }

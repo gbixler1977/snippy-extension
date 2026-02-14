@@ -3749,6 +3749,23 @@ const formulaHinter = (cm, options) => {
   };
 };
 
+          const showFormulaHint = (cm) => {
+            cm.showHint({
+              hint: formulaHinter,
+              completeSingle: false,
+              customKeys: {
+                Home: (hintCm, handle) => {
+                  handle.close();
+                  hintCm.execCommand('goLineStart');
+                },
+                End: (hintCm, handle) => {
+                  handle.close();
+                  hintCm.execCommand('goLineEnd');
+                }
+              }
+            });
+          };
+
 
 
 
@@ -3766,10 +3783,7 @@ const formulaHinter = (cm, options) => {
             if (lineContent.trim() === "") return;
             const token = cm.getTokenAt(cursor);
             if (!token.string.trim() || token.type === 'string' || token.type === 'comment' || token.type === 'operator') return;
-            cm.showHint({
-              hint: formulaHinter,
-              completeSingle: false
-            });
+            showFormulaHint(cm);
           }, 250));
 
           cmEditor.on('inputRead', (cm, change) => {
@@ -3778,10 +3792,7 @@ const formulaHinter = (cm, options) => {
 
             if (typed === '[' || typed === '$') {
               setTimeout(() => {
-                cm.showHint({
-                  hint: formulaHinter,
-                  completeSingle: false
-                });
+                showFormulaHint(cm);
 
                 chrome.storage.sync.get('snippyFontSize', (res) => {
                   const fontSize = res.snippyFontSize || '18px';
