@@ -190,14 +190,23 @@ async function _saveToOneDrive(code, metadata) {
 // --- Snippy Apply (Formula) — background bounce controller ---
 const snippyApplyPending = new Map(); // tabId -> { returnUrl, startedAt, sourceWindowId, sourceIndex, landedAtReturnUrlAt? }
 const snippyApplyFinalizeTimers = new Map(); // tabId -> timeoutId
+const SNIPPY_APPLY_LOG_PREFIX = '[Snippy Apply Flow]';
+const APPLY_FINALIZE_DELAY_MS = 10000;
 // --- Persist pending Apply across MV3 service-worker sleeps ---
 const APPLY_KEY = (tabId) => `snippy:apply:${tabId}`;
+
+function logApply(event, details = {}) {
+  console.log(`${SNIPPY_APPLY_LOG_PREFIX} ${event}`, details);
+}
 
 async function loadPendingFromSession(tabId) {
   try {
     const obj = await chrome.storage.session.get(APPLY_KEY(tabId));
-    return obj[APPLY_KEY(tabId)] || null;
-  } catch {
+    const pending = obj[APPLY_KEY(tabId)] || null;
+    if (pending) logApply('loaded pending from session', { tabId, pending });
+    return pending;
+  } catch (error) {
+    logApply('failed to load pending from session', { tabId, error: error?.message || String(error) });
     return null;
   }
 }
@@ -205,18 +214,23 @@ async function loadPendingFromSession(tabId) {
 async function savePendingToSession(tabId, data) {
   try {
     await chrome.storage.session.set({ [APPLY_KEY(tabId)]: data });
-  } catch {}
+  } catch (error) {
+    logApply('failed to save pending to session', { tabId, error: error?.message || String(error) });
+  }
 }
 
 async function clearPendingFromSession(tabId) {
   try {
     await chrome.storage.session.remove(APPLY_KEY(tabId));
-  } catch {}
+  } catch (error) {
+    logApply('failed to clear pending from session', { tabId, error: error?.message || String(error) });
+  }
 }
 
 async function setSnippyApplyPending(tabId, pending) {
   snippyApplyPending.set(tabId, pending);
   await savePendingToSession(tabId, pending);
+  logApply('set pending', { tabId, pending });
 }
 
 async function clearSnippyApplyPending(tabId) {
@@ -227,11 +241,14 @@ async function clearSnippyApplyPending(tabId) {
   }
   snippyApplyPending.delete(tabId);
   await clearPendingFromSession(tabId);
+  logApply('cleared pending', { tabId });
 }
 
-async function scheduleApplyFinalize(tabId, ms = 3000) {
+async function scheduleApplyFinalize(tabId, ms = APPLY_FINALIZE_DELAY_MS) {
   const existingTimer = snippyApplyFinalizeTimers.get(tabId);
   if (existingTimer) clearTimeout(existingTimer);
+
+  logApply('scheduled finalize', { tabId, delayMs: ms });
 
   const timerId = setTimeout(async () => {
     snippyApplyFinalizeTimers.delete(tabId);
@@ -244,6 +261,7 @@ async function scheduleApplyFinalize(tabId, ms = 3000) {
 function scheduleApplyAutoExpire(tabId, ms = 20000) {
   setTimeout(() => {
     // If still pending after 20s, clear it to avoid accidental future bounces
+    logApply('auto-expiring pending', { tabId, delayMs: ms });
     clearSnippyApplyPending(tabId);
   }, ms);
 }
@@ -290,8 +308,10 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
         };
         await setSnippyApplyPending(sender.tab.id, pending);
         scheduleApplyAutoExpire(sender.tab.id);
+        logApply('begin received', { tabId: sender.tab.id, returnUrl: req.returnUrl });
         sendResponse && sendResponse({ ok: true });
-      } catch {
+      } catch (error) {
+        logApply('failed handling begin', { tabId: sender?.tab?.id, error: error?.message || String(error) });
         sendResponse && sendResponse({ ok: false });
       }
     })();
@@ -300,6 +320,7 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
     (async () => {
       await clearSnippyApplyPending(sender.tab.id);
+      logApply('cancel received', { tabId: sender.tab.id });
       sendResponse && sendResponse({ ok: true });
     })();
     return true;
@@ -323,6 +344,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (!pending) return;
 
     const navigatedUrl = changeInfo.url;
+    logApply('tab updated while pending', {
+      tabId,
+      navigatedUrl,
+      returnUrl: pending.returnUrl,
+      landedAtReturnUrlAt: pending.landedAtReturnUrlAt || null
+    });
 
     // --- FIX: Check for successful navigation TO the return URL ---
     // If QB's save navigates us *exactly* to our target URL,
@@ -334,20 +361,26 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       pending = { ...pending, landedAtReturnUrlAt: Date.now() };
       await setSnippyApplyPending(tabId, pending);
       await scheduleApplyFinalize(tabId);
+      logApply('landed at return URL; keeping pending briefly for tab-close recovery', { tabId });
       return;
     }
     // -----------------------------------------------------------
 
     // Still in a *different* edit-like context? (e.g., a reload) → keep waiting.
-    if (isEditLike(navigatedUrl)) return;
+    if (isEditLike(navigatedUrl)) {
+      logApply('still in edit-like URL; waiting', { tabId, navigatedUrl });
+      return;
+    }
 
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
     try {
+      logApply('left edit context; forcing bounce back to return URL', { tabId, returnUrl: pending.returnUrl });
       await chrome.tabs.update(tabId, { url: pending.returnUrl });
       await clearSnippyApplyPending(tabId);
-    } catch {
+    } catch (error) {
       // Tab may have been closed between onUpdated and update().
       // Keep pending so onRemoved can reopen in a new tab.
+      logApply('bounce update failed; keeping pending for onRemoved recovery', { tabId, error: error?.message || String(error) });
     }
   })();
 });
@@ -362,6 +395,13 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
       if (!pending) return;
     }
 
+    logApply('tab removed while pending', {
+      tabId,
+      removeInfo,
+      returnUrl: pending.returnUrl,
+      landedAtReturnUrlAt: pending.landedAtReturnUrlAt || null
+    });
+
     await clearSnippyApplyPending(tabId);
 
     const createOptions = { url: pending.returnUrl, active: true };
@@ -370,8 +410,10 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
 
     try {
       await chrome.tabs.create(createOptions);
+      logApply('reopened return URL in new tab', { tabId, createOptions });
     } catch {
       await chrome.tabs.create({ url: pending.returnUrl, active: true });
+      logApply('reopened return URL with fallback options', { tabId, returnUrl: pending.returnUrl });
     }
   })();
 });
