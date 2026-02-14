@@ -213,14 +213,14 @@ async function clearPendingFromSession(tabId) {
   } catch {}
 }
 
-function setSnippyApplyPending(tabId, pending) {
+async function setSnippyApplyPending(tabId, pending) {
   snippyApplyPending.set(tabId, pending);
-  savePendingToSession(tabId, pending);
+  await savePendingToSession(tabId, pending);
 }
 
-function clearSnippyApplyPending(tabId) {
+async function clearSnippyApplyPending(tabId) {
   snippyApplyPending.delete(tabId);
-  clearPendingFromSession(tabId);
+  await clearPendingFromSession(tabId);
 }
 
 function scheduleApplyAutoExpire(tabId, ms = 20000) {
@@ -262,21 +262,28 @@ function isEditLike(u) {
 // 1) Accept "begin" and "cancel" from the content script
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
   if (req?.action === 'snippyApplyBegin' && sender?.tab?.id) {
-    const pending = {
-      returnUrl: req.returnUrl,
-      startedAt: Date.now(),
-      sourceWindowId: sender.tab.windowId,
-      sourceIndex: sender.tab.index
-    };
-    setSnippyApplyPending(sender.tab.id, pending);
-    scheduleApplyAutoExpire(sender.tab.id);
-
-    sendResponse && sendResponse({ ok: true });
+    (async () => {
+      try {
+        const pending = {
+          returnUrl: req.returnUrl,
+          startedAt: Date.now(),
+          sourceWindowId: sender.tab.windowId,
+          sourceIndex: sender.tab.index
+        };
+        await setSnippyApplyPending(sender.tab.id, pending);
+        scheduleApplyAutoExpire(sender.tab.id);
+        sendResponse && sendResponse({ ok: true });
+      } catch {
+        sendResponse && sendResponse({ ok: false });
+      }
+    })();
     return true;
   }
   if (req?.action === 'snippyApplyCancel' && sender?.tab?.id) {
-    clearSnippyApplyPending(sender.tab.id);
-    sendResponse && sendResponse({ ok: true });
+    (async () => {
+      await clearSnippyApplyPending(sender.tab.id);
+      sendResponse && sendResponse({ ok: true });
+    })();
     return true;
   }
 });
@@ -304,7 +311,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     // our job is done. Just clear the pending state and stop.
     if (navigatedUrl.split('#')[0] === pending.returnUrl.split('#')[0]) {
       // (Ignoring hash just in case)
-      clearSnippyApplyPending(tabId);
+      await clearSnippyApplyPending(tabId);
       return;
     }
     // -----------------------------------------------------------
@@ -313,8 +320,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (isEditLike(navigatedUrl)) return;
 
     // Left edit context → successful save → bounce back to canonical mf URL we stored.
-    clearSnippyApplyPending(tabId);
-    chrome.tabs.update(tabId, { url: pending.returnUrl });
+    try {
+      await chrome.tabs.update(tabId, { url: pending.returnUrl });
+      await clearSnippyApplyPending(tabId);
+    } catch {
+      // Tab may have been closed between onUpdated and update().
+      // Keep pending so onRemoved can reopen in a new tab.
+    }
   })();
 });
 
@@ -328,7 +340,7 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
       if (!pending) return;
     }
 
-    clearSnippyApplyPending(tabId);
+    await clearSnippyApplyPending(tabId);
 
     const createOptions = { url: pending.returnUrl, active: true };
     if (typeof pending.sourceWindowId === 'number') createOptions.windowId = pending.sourceWindowId;
