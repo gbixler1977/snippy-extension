@@ -267,11 +267,25 @@ function snippyWaitForPageWorldReady(timeoutMs = 2000) {
       btn.className = nativeSave.className || 'Vibrant Confirm ui-button ui-corner-all ui-widget';
       btn.style.marginLeft = '8px';
 
-   btn.addEventListener('click', () => {
+   btn.addEventListener('click', async () => {
+        let beginRegistered = false;
         try {
-          // 1) Tell background we’re starting an Apply. It will watch the next navigation in this tab.
+          // 1) Tell background we’re starting an Apply and wait for ack before Save.
           const returnUrl = snippyCanonicalMfUrlFromMeta();
-          chrome.runtime.sendMessage({ action: 'snippyApplyBegin', returnUrl });
+          const beginResp = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({ action: 'snippyApplyBegin', returnUrl }, (resp) => {
+              if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+                return;
+              }
+              resolve(resp);
+            });
+          });
+          beginRegistered = Boolean(beginResp?.ok);
+
+          if (!beginRegistered) {
+            throw new Error('snippyApplyBegin was not acknowledged.');
+          }
 
           // 2) Click the real Save so all native QB logic runs.
           //    The background.js onUpdated listener will handle the success (bounce).
@@ -279,8 +293,10 @@ function snippyWaitForPageWorldReady(timeoutMs = 2000) {
           nativeSave.click();
         } catch (e) {
           console.warn('Snippy Apply start failed:', e);
-          // extra safety: cancel if we threw before navigating
-          chrome.runtime.sendMessage({ action: 'snippyApplyCancel' });
+          // extra safety: cancel if we threw before navigating after a begin was registered
+          if (beginRegistered) {
+            chrome.runtime.sendMessage({ action: 'snippyApplyCancel' });
+          }
         }
       });
 
@@ -344,7 +360,15 @@ function snippyCanonicalMfUrlFromMeta() {
     if (!tableId || !fieldId) return location.href;
 
     const url = new URL(location.href);
-    const mf = new URL(`/nav/app/${url.pathname.match(/\/nav\/app\/([^/]+)/)?.[1] || ''}/table/${tableId}/action/mf`, url.origin);
+    const appId =
+      meta.appId ||
+      url.pathname.match(/\/nav\/app\/([^/]+)/)?.[1] ||
+      url.searchParams.get('appid') ||
+      url.searchParams.get('dbid') ||
+      '';
+    if (!appId) return location.href;
+
+    const mf = new URL(`/nav/app/${appId}/table/${tableId}/action/mf`, url.origin);
     mf.searchParams.set('fid', String(fieldId));
     return mf.toString();
   } catch {
