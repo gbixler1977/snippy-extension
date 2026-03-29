@@ -1311,9 +1311,12 @@ function showErrorModal(message) {
     fieldListContainer.addEventListener('click', (e) => {
       const fieldItem = e.target.closest('.field-item')
       if (fieldItem && cmEditor) {
+        const fieldValue = fieldItem.dataset.value || ''
+        const normalizedFieldName = fieldValue.replace(/^\[/, '').replace(/]$/, '')
         const selection = cmEditor.getSelection()
+
         if (selection.length > 0) {
-          cmEditor.replaceSelection(`${fieldItem.dataset.value}`)
+          cmEditor.replaceSelection(`[${normalizedFieldName}]`)
         } else {
           const cursor = cmEditor.getCursor()
           const charBefore = cmEditor.getRange(
@@ -1324,8 +1327,17 @@ function showErrorModal(message) {
             cursor,
             CodeMirror.Pos(cursor.line, cursor.ch + 1)
           )
-          const useExistingBrackets = charBefore === '[' && charAfter === ']'
-          cmEditor.replaceSelection(useExistingBrackets ? fieldItem.dataset.value : `${fieldItem.dataset.value}`)
+
+          if (charBefore === '[' && charAfter === ']') {
+            cmEditor.replaceRange(
+              normalizedFieldName,
+              CodeMirror.Pos(cursor.line, Math.max(0, cursor.ch - 1)),
+              CodeMirror.Pos(cursor.line, cursor.ch + 1)
+            )
+            cmEditor.setCursor(CodeMirror.Pos(cursor.line, cursor.ch + normalizedFieldName.length - 1))
+          } else {
+            cmEditor.replaceSelection(`[${normalizedFieldName}]`)
+          }
         }
         fieldListContainer.style.display = 'none'
         cmEditor.focus()
@@ -3743,10 +3755,11 @@ const formulaHinter = (cm, options) => {
         details: `Function`,
         render: renderSuggestion,
         hint: (cm, data, completion) => {
-          const charAfter = cm.getRange(to, CodeMirror.Pos(to.line, to.ch + 1));
-          const fnCallText = charAfter === ')' ? `${f.name}(` : completion.text;
+          const charsAfter = cm.getRange(to, CodeMirror.Pos(to.line, to.ch + 2));
+          const fnCallText = charsAfter === '()' ? `${f.name}` : completion.text;
           cm.replaceRange(fnCallText, from, to);
-          cm.setCursor(CodeMirror.Pos(from.line, from.ch + fnCallText.length - 1));
+          const cursorOffset = fnCallText.endsWith('()') ? fnCallText.length - 1 : fnCallText.length;
+          cm.setCursor(CodeMirror.Pos(from.line, from.ch + cursorOffset));
         }
       }));
 
@@ -3764,6 +3777,10 @@ const formulaHinter = (cm, options) => {
 
           const pickActiveFormulaHint = (cm) => {
             const completionState = cm.state?.completionActive;
+            if (completionState && typeof completionState.pick === 'function') {
+              completionState.pick();
+              return true;
+            }
             const widget = completionState?.widget;
             if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) return false;
             const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
@@ -3784,7 +3801,9 @@ const formulaHinter = (cm, options) => {
               completeSingle: false,
               customKeys: {
                 Tab: (hintCm) => {
-                  pickActiveFormulaHint(hintCm);
+                  if (!pickActiveFormulaHint(hintCm)) {
+                    hintCm.closeHint();
+                  }
                 },
                 Home: (hintCm, handle) => {
                   handle.close();
