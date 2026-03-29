@@ -1319,22 +1319,23 @@ function showErrorModal(message) {
           cmEditor.replaceSelection(`[${normalizedFieldName}]`)
         } else {
           const cursor = cmEditor.getCursor()
-          const charBefore = cmEditor.getRange(
-            CodeMirror.Pos(cursor.line, Math.max(0, cursor.ch - 1)),
-            cursor
-          )
-          const charAfter = cmEditor.getRange(
-            cursor,
-            CodeMirror.Pos(cursor.line, cursor.ch + 1)
-          )
+          const lineText = cmEditor.getLine(cursor.line) || ''
 
-          if (charBefore === '[' && charAfter === ']') {
+          const leftBracketIndex = lineText.lastIndexOf('[', cursor.ch)
+          const rightBracketIndex = lineText.indexOf(']', cursor.ch)
+          const isInsideBracketPair =
+            leftBracketIndex !== -1 &&
+            rightBracketIndex !== -1 &&
+            leftBracketIndex < cursor.ch &&
+            cursor.ch <= rightBracketIndex
+
+          if (isInsideBracketPair) {
             cmEditor.replaceRange(
-              normalizedFieldName,
-              CodeMirror.Pos(cursor.line, Math.max(0, cursor.ch - 1)),
-              CodeMirror.Pos(cursor.line, cursor.ch + 1)
+              `[${normalizedFieldName}]`,
+              CodeMirror.Pos(cursor.line, leftBracketIndex),
+              CodeMirror.Pos(cursor.line, rightBracketIndex + 1)
             )
-            cmEditor.setCursor(CodeMirror.Pos(cursor.line, cursor.ch + normalizedFieldName.length - 1))
+            cmEditor.setCursor(CodeMirror.Pos(cursor.line, leftBracketIndex + normalizedFieldName.length + 2))
           } else {
             cmEditor.replaceSelection(`[${normalizedFieldName}]`)
           }
@@ -3610,7 +3611,7 @@ if (!isFormula) { // code pages
                 }
                 return;
               }
-              const shouldSkipPair = charAfter === closer && !pairOpeners.has(charAfter);
+              const shouldSkipPair = opener !== '(' && charAfter === closer && !pairOpeners.has(charAfter);
               if (shouldSkipPair) return;
               const newText = opener + closer;
               change.update(change.from, change.to, [newText]);
@@ -3680,34 +3681,18 @@ const formulaHinter = (cm, options) => {
         details: `Field - ${f.type || 'unknown'}`,
         render: renderSuggestion,
         hint: (cm, data, completion) => {
-          const openPos = CodeMirror.Pos(from.line, Math.max(0, from.ch - 1));
-          const closePos = CodeMirror.Pos(to.line, to.ch + 1);
-          const charBefore = cm.getRange(openPos, from);
-          const charAfter = cm.getRange(to, closePos);
+          const currentLine = cm.getLine(from.line);
+          const lineLength = currentLine.length;
+          const leftBracketPos = from.ch - 1;
+          const hasOpenBracket = leftBracketPos >= 0 && currentLine[leftBracketPos] === '[';
+          const rightBracketPos = Math.min(lineLength - 1, to.ch);
+          const hasCloseBracket = rightBracketPos >= 0 && currentLine[rightBracketPos] === ']';
 
-          const hasOpenBracket = charBefore === '[';
-          const hasCloseBracket = charAfter === ']';
+          const replaceFrom = hasOpenBracket ? CodeMirror.Pos(from.line, leftBracketPos) : from;
+          const replaceTo = hasCloseBracket ? CodeMirror.Pos(to.line, to.ch + 1) : to;
 
-          if (hasOpenBracket && hasCloseBracket) {
-            cm.replaceRange(completion.text, from, to);
-            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length));
-            return;
-          }
-
-          if (hasOpenBracket && !hasCloseBracket) {
-            cm.replaceRange(completion.text + ']', from, to);
-            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 1));
-            return;
-          }
-
-          if (!hasOpenBracket && hasCloseBracket) {
-            cm.replaceRange('[' + completion.text, from, to);
-            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 1));
-            return;
-          }
-
-          cm.replaceRange('[' + completion.text + ']', from, to);
-          cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 2));
+          cm.replaceRange(`[${completion.text}]`, replaceFrom, replaceTo);
+          cm.setCursor(CodeMirror.Pos(replaceFrom.line, replaceFrom.ch + completion.text.length + 2));
         }
       }));
     list.push(...fieldMatches);
@@ -3800,10 +3785,13 @@ const formulaHinter = (cm, options) => {
               hint: formulaHinter,
               completeSingle: false,
               customKeys: {
-                Tab: (hintCm) => {
-                  if (!pickActiveFormulaHint(hintCm)) {
-                    hintCm.closeHint();
+                Tab: (hintCm, handle) => {
+                  if (pickActiveFormulaHint(hintCm)) return;
+                  if (handle && typeof handle.pick === 'function') {
+                    handle.pick();
+                    return;
                   }
+                  hintCm.closeHint();
                 },
                 Home: (hintCm, handle) => {
                   handle.close();
