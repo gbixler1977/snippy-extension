@@ -3762,15 +3762,25 @@ const formulaHinter = (cm, options) => {
 
           const pickActiveFormulaHint = (cm) => {
             const completionState = cm.state?.completionActive;
-            if (completionState && typeof completionState.pick === 'function') {
+            const widget = completionState?.widget;
+            if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) return false;
+
+            const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
+            if (widget.selectedHint < 0 && typeof widget.changeActive === 'function') {
+              widget.changeActive(activeIndex);
+            }
+
+            if (typeof widget.pick === 'function') {
+              widget.pick();
+              return true;
+            }
+
+            if (typeof completionState?.pick === 'function') {
               completionState.pick();
               return true;
             }
-            const widget = completionState?.widget;
-            if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) return false;
-            const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
-            widget.pick(widget.hints[activeIndex], activeIndex);
-            return true;
+
+            return false;
           };
 
           cmEditor.addKeyMap({
