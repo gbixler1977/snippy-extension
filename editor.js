@@ -1311,7 +1311,22 @@ function showErrorModal(message) {
     fieldListContainer.addEventListener('click', (e) => {
       const fieldItem = e.target.closest('.field-item')
       if (fieldItem && cmEditor) {
-        cmEditor.replaceSelection(fieldItem.dataset.value)
+        const selection = cmEditor.getSelection()
+        if (selection.length > 0) {
+          cmEditor.replaceSelection(`[${fieldItem.dataset.value}]`)
+        } else {
+          const cursor = cmEditor.getCursor()
+          const charBefore = cmEditor.getRange(
+            CodeMirror.Pos(cursor.line, Math.max(0, cursor.ch - 1)),
+            cursor
+          )
+          const charAfter = cmEditor.getRange(
+            cursor,
+            CodeMirror.Pos(cursor.line, cursor.ch + 1)
+          )
+          const useExistingBrackets = charBefore === '[' && charAfter === ']'
+          cmEditor.replaceSelection(useExistingBrackets ? fieldItem.dataset.value : `[${fieldItem.dataset.value}]`)
+        }
         fieldListContainer.style.display = 'none'
         cmEditor.focus()
       }
@@ -3527,6 +3542,8 @@ if (!isFormula) { // code pages
             '"': '"',
             "'": "'"
           };
+          const pairOpeners = new Set(Object.keys(pairs));
+          const isAutoCloseDisallowedToken = (token) => token?.type && (token.type.includes('string') || token.type.includes('comment'));
 
           cmEditor.options.extraKeys['Backspace'] = (cm) => {
             if (cm.getSelection().length > 0) return CodeMirror.Pass;
@@ -3560,7 +3577,7 @@ if (!isFormula) { // code pages
             const closer = pairs[opener];
             if (!closer) return;
             const token = cm.getTokenAt(change.from);
-            if (token.type && (token.type.includes('string') || token.type.includes('comment'))) return;
+            if (isAutoCloseDisallowedToken(token)) return;
             if (opener === "'") {
               const charBefore = cm.getRange(CodeMirror.Pos(change.from.line, change.from.ch - 1), change.from);
               if (charBefore.length > 0 && /\w/.test(charBefore)) return;
@@ -3572,7 +3589,17 @@ if (!isFormula) { // code pages
             } else {
               const cursor = change.from;
               const charAfter = cm.getRange(cursor, CodeMirror.Pos(cursor.line, cursor.ch + 1));
-              if (charAfter.length > 0 && /\S/.test(charAfter)) return;
+              if (opener === '[') {
+                const hasImmediateCloseBracket = charAfter === ']';
+                const prevChar = cm.getRange(CodeMirror.Pos(cursor.line, Math.max(0, cursor.ch - 1)), cursor);
+                if (!hasImmediateCloseBracket && prevChar !== '[') {
+                  change.update(change.from, change.to, ['[]']);
+                  setTimeout(() => cm.setCursor(CodeMirror.Pos(change.from.line, change.from.ch + 1)), 0);
+                }
+                return;
+              }
+              const shouldSkipPair = charAfter === closer && !pairOpeners.has(charAfter);
+              if (shouldSkipPair) return;
               const newText = opener + closer;
               change.update(change.from, change.to, [newText]);
               setTimeout(() => cm.setCursor(CodeMirror.Pos(change.from.line, change.from.ch + 1)), 0);
@@ -3754,6 +3781,15 @@ const formulaHinter = (cm, options) => {
               hint: formulaHinter,
               completeSingle: false,
               customKeys: {
+                Tab: (hintCm, handle) => {
+                  const widget = handle?.widget;
+                  if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) {
+                    handle?.close();
+                    return;
+                  }
+                  const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
+                  widget.pick(widget.hints[activeIndex], activeIndex);
+                },
                 Home: (hintCm, handle) => {
                   handle.close();
                   hintCm.execCommand('goLineStart');
