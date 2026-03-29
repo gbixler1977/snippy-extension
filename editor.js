@@ -3667,51 +3667,36 @@ const formulaHinter = (cm, options) => {
         displayText: f.name,
         details: `Field - ${f.type || 'unknown'}`,
         render: renderSuggestion,
-   hint: (cm, data, completion) => {
-    const cursor = cm.getCursor();
-    const currentToken = cm.getTokenAt(cursor);
-   
-    
-    let hasOpenBracket = currentToken.string.startsWith('[');
-    const hasCloseBracket = currentToken.string.endsWith(']');
+        hint: (cm, data, completion) => {
+          const openPos = CodeMirror.Pos(from.line, Math.max(0, from.ch - 1));
+          const closePos = CodeMirror.Pos(to.line, to.ch + 1);
+          const charBefore = cm.getRange(openPos, from);
+          const charAfter = cm.getRange(to, closePos);
 
-    
-    let effectiveFrom = CodeMirror.Pos(from.line, from.ch);
+          const hasOpenBracket = charBefore === '[';
+          const hasCloseBracket = charAfter === ']';
 
-    
-    if (!hasOpenBracket && from.ch > 0) {
-        const prevChar = cm.getRange(CodeMirror.Pos(from.line, from.ch - 1), from);
-        if (prevChar === '[') {
-           
-            hasOpenBracket = true;
-           
-            effectiveFrom = CodeMirror.Pos(from.line, from.ch - 1);
+          if (hasOpenBracket && hasCloseBracket) {
+            cm.replaceRange(completion.text, from, to);
+            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length));
+            return;
+          }
+
+          if (hasOpenBracket && !hasCloseBracket) {
+            cm.replaceRange(completion.text + ']', from, to);
+            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 1));
+            return;
+          }
+
+          if (!hasOpenBracket && hasCloseBracket) {
+            cm.replaceRange('[' + completion.text, from, to);
+            cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 1));
+            return;
+          }
+
+          cm.replaceRange('[' + completion.text + ']', from, to);
+          cm.setCursor(CodeMirror.Pos(from.line, from.ch + completion.text.length + 2));
         }
-    }
-
-  
-
-    if (hasOpenBracket && hasCloseBracket) {
-        
-        const lengthDiff = completion.text.length - (to.ch - from.ch);
-        const finalCursorPos = CodeMirror.Pos(cursor.line, currentToken.end + lengthDiff);
-        
-        cm.replaceRange(completion.text, from, to);
-        cm.setCursor(finalCursorPos);
-
-    } else if (hasOpenBracket && !hasCloseBracket) {
-        
-        const textToInsert = '[' + completion.text + ']';
-        cm.replaceRange(textToInsert, effectiveFrom, to);
-        cm.setCursor(cm.getCursor('to')); 
-
-    } else {
-       
-        const textToInsert = '[' + completion.text + ']';
-        cm.replaceRange(textToInsert, from, to);
-        cm.setCursor(cm.getCursor('to'));
-    }
-}
       }));
     list.push(...fieldMatches);
   }
@@ -3758,9 +3743,10 @@ const formulaHinter = (cm, options) => {
         details: `Function`,
         render: renderSuggestion,
         hint: (cm, data, completion) => {
-          cm.replaceRange(completion.text, from, to);
-          const cur = cm.getCursor();
-          cm.setCursor(cur.line, cur.ch - 1);
+          const charAfter = cm.getRange(to, CodeMirror.Pos(to.line, to.ch + 1));
+          const fnCallText = charAfter === ')' ? `${f.name}(` : completion.text;
+          cm.replaceRange(fnCallText, from, to);
+          cm.setCursor(CodeMirror.Pos(from.line, from.ch + fnCallText.length - 1));
         }
       }));
 
@@ -3776,19 +3762,29 @@ const formulaHinter = (cm, options) => {
   };
 };
 
+          const pickActiveFormulaHint = (cm) => {
+            const completionState = cm.state?.completionActive;
+            const widget = completionState?.widget;
+            if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) return false;
+            const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
+            widget.pick(widget.hints[activeIndex], activeIndex);
+            return true;
+          };
+
+          cmEditor.addKeyMap({
+            Tab: (cm) => {
+              if (pickActiveFormulaHint(cm)) return;
+              return CodeMirror.Pass;
+            }
+          });
+
           const showFormulaHint = (cm) => {
             cm.showHint({
               hint: formulaHinter,
               completeSingle: false,
               customKeys: {
-                Tab: (hintCm, handle) => {
-                  const widget = handle?.widget;
-                  if (!widget || !Array.isArray(widget.hints) || widget.hints.length === 0) {
-                    handle?.close();
-                    return;
-                  }
-                  const activeIndex = widget.selectedHint >= 0 ? widget.selectedHint : 0;
-                  widget.pick(widget.hints[activeIndex], activeIndex);
+                Tab: (hintCm) => {
+                  pickActiveFormulaHint(hintCm);
                 },
                 Home: (hintCm, handle) => {
                   handle.close();
