@@ -1313,7 +1313,7 @@ function showErrorModal(message) {
       if (fieldItem && cmEditor) {
         const selection = cmEditor.getSelection()
         if (selection.length > 0) {
-          cmEditor.replaceSelection(`[${fieldItem.dataset.value}]`)
+          cmEditor.replaceSelection(`${fieldItem.dataset.value}`)
         } else {
           const cursor = cmEditor.getCursor()
           const charBefore = cmEditor.getRange(
@@ -1325,7 +1325,7 @@ function showErrorModal(message) {
             CodeMirror.Pos(cursor.line, cursor.ch + 1)
           )
           const useExistingBrackets = charBefore === '[' && charAfter === ']'
-          cmEditor.replaceSelection(useExistingBrackets ? fieldItem.dataset.value : `[${fieldItem.dataset.value}]`)
+          cmEditor.replaceSelection(useExistingBrackets ? fieldItem.dataset.value : `${fieldItem.dataset.value}`)
         }
         fieldListContainer.style.display = 'none'
         cmEditor.focus()
