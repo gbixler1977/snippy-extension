@@ -256,40 +256,45 @@ document.addEventListener('DOMContentLoaded', () => {
     return (pageMetadata.label || '').trim();
   }
 
-  function applySnippyFieldNameFunction(cm, change) {
-    if (!cm || isApplyingSnippyFieldName) return;
-    if (!pageMetadata || pageMetadata.type !== 'formula') return;
+ function applySnippyFieldNameFunction(cm, change) {
+  if (!cm || isApplyingSnippyFieldName) return;
+  if (!pageMetadata || pageMetadata.type !== 'formula') return;
 
-    const fieldName = getActiveFormulaFieldName();
-    if (!fieldName) return;
+  const fieldName = getActiveFormulaFieldName();
+  if (!fieldName) return;
 
-    const insertedText = Array.isArray(change?.text) ? change.text.join('\n') : '';
-    const triggerRegex = /snippyfieldname\(\)/i;
-    if (!triggerRegex.test(insertedText) && change?.origin !== '+paste') return;
+  const triggerRegex = /snippyfieldname\(\)/i;
+  const currentEditorText = cm.getValue();
 
-    let replacedAny = false;
-    const cursorBefore = cm.getCursor();
-    isApplyingSnippyFieldName = true;
+  if (!triggerRegex.test(currentEditorText)) return;
 
-    try {
-      cm.operation(() => {
-        const search = cm.getSearchCursor(/snippyfieldname\(\)/i, CodeMirror.Pos(cm.firstLine(), 0), {
-          caseFold: true
-        });
+  let replacedAny = false;
+  let lastReplacementEnd = null;
+  isApplyingSnippyFieldName = true;
 
-        while (search.findNext()) {
-          search.replace(fieldName);
-          replacedAny = true;
-        }
+  try {
+    cm.operation(() => {
+      const search = cm.getSearchCursor(/snippyfieldname\(\)/i, CodeMirror.Pos(cm.firstLine(), 0), {
+        caseFold: true
       });
-    } finally {
-      isApplyingSnippyFieldName = false;
-    }
 
-    if (replacedAny) {
-      cm.setCursor(cursorBefore);
-    }
+      while (search.findNext()) {
+        const matchFrom = search.from();
+        search.replace(fieldName);
+        replacedAny = true;
+        lastReplacementEnd = CodeMirror.Pos(matchFrom.line, matchFrom.ch + fieldName.length);
+      }
+    });
+  } finally {
+    isApplyingSnippyFieldName = false;
   }
+
+  if (replacedAny && lastReplacementEnd) {
+    setTimeout(() => {
+      cm.setCursor(lastReplacementEnd);
+    }, 0);
+  }
+}
 
 
 
