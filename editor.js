@@ -272,9 +272,66 @@ document.addEventListener('DOMContentLoaded', () => {
       getValue: () => getActiveFormulaFieldName()
     }
   ];
+  let donorDefinedFunctions = [];
+
+  function normalizeDonorFunctionName(functionName) {
+    const rawName = String(functionName || '').trim();
+    return rawName.replace(/\(\)$/, '');
+  }
+
+  async function loadDonorDefinedFunctions() {
+    try {
+      const { snippyUnlock } = await chrome.storage.sync.get('snippyUnlock');
+      if (!snippyUnlock?.email || !snippyUnlock?.code) {
+        donorDefinedFunctions = [];
+        return;
+      }
+
+      const response = await fetch('https://snippy-server-clean.onrender.com/api/functions/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: snippyUnlock.email,
+          code: snippyUnlock.code
+        })
+      });
+
+      if (!response.ok) {
+        donorDefinedFunctions = [];
+        console.warn('⚠️ Failed to load donor-defined functions:', response.status);
+        return;
+      }
+
+      const rows = await response.json();
+      donorDefinedFunctions = (Array.isArray(rows) ? rows : [])
+        .map((row) => {
+          const normalizedName = normalizeDonorFunctionName(row?.functionName);
+          const definitionText = String(row?.definitionText || '').trim();
+          if (!normalizedName || !definitionText) return null;
+
+          return {
+            id: `donor-${normalizedName.toLowerCase()}`,
+            name: normalizedName,
+            signature: `${normalizedName}()`,
+            description: 'User-defined function',
+            example: `${normalizedName}()`,
+            source: 'snippy',
+            formulaOnly: false,
+            getValue: () => definitionText
+          };
+        })
+        .filter(Boolean);
+
+      console.log(`✅ Loaded ${donorDefinedFunctions.length} donor-defined functions.`);
+    } catch (err) {
+      donorDefinedFunctions = [];
+      console.error('❌ Error loading donor-defined functions:', err);
+    }
+  }
 
   function getSnippyFunctionsForCurrentContext() {
-    return SNIPPY_FUNCTIONS.filter((func) => !(func.formulaOnly && !isFormulaFieldContext()));
+    const builtInFunctions = SNIPPY_FUNCTIONS.filter((func) => !(func.formulaOnly && !isFormulaFieldContext()));
+    return [...builtInFunctions, ...donorDefinedFunctions];
   }
 
   function buildCombinedFunctionsList(quickbaseFunctions = []) {
@@ -648,6 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateDonorBadgeUI(result.isAdmin)
         enableDonorPanel()
+        await loadDonorDefinedFunctions();
         if (result.isAdmin) {
           enableAdminPanel()
         }
@@ -4177,6 +4235,7 @@ if (!isFormula) {
             console.log('✅ Stored Snippy unlock is valid upon load.')
             updateDonorBadgeUI(verificationResult.isAdmin)
             enableDonorPanel()
+            await loadDonorDefinedFunctions();
             if (verificationResult.isAdmin) {
               enableAdminPanel()
             }
