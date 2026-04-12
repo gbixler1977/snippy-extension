@@ -332,6 +332,52 @@ document.addEventListener('DOMContentLoaded', () => {
       cm.setCursor(cursorBefore);
     }
   }
+  let isApplyingSnippyFieldName = false;
+
+  function getActiveFormulaFieldName() {
+    if (!pageMetadata || pageMetadata.type !== 'formula') return '';
+    return (pageMetadata.label || '').trim();
+  }
+
+ function applySnippyFieldNameFunction(cm, change) {
+  if (!cm || isApplyingSnippyFieldName) return;
+  if (!pageMetadata || pageMetadata.type !== 'formula') return;
+
+  const fieldName = getActiveFormulaFieldName();
+  if (!fieldName) return;
+
+  const triggerRegex = /snippyfieldname\(\)/i;
+  const currentEditorText = cm.getValue();
+
+  if (!triggerRegex.test(currentEditorText)) return;
+
+  let replacedAny = false;
+  let lastReplacementEnd = null;
+  isApplyingSnippyFieldName = true;
+
+  try {
+    cm.operation(() => {
+      const search = cm.getSearchCursor(/snippyfieldname\(\)/i, CodeMirror.Pos(cm.firstLine(), 0), {
+        caseFold: true
+      });
+
+      while (search.findNext()) {
+        const matchFrom = search.from();
+        search.replace(fieldName);
+        replacedAny = true;
+        lastReplacementEnd = CodeMirror.Pos(matchFrom.line, matchFrom.ch + fieldName.length);
+      }
+    });
+  } finally {
+    isApplyingSnippyFieldName = false;
+  }
+
+  if (replacedAny && lastReplacementEnd) {
+    setTimeout(() => {
+      cm.setCursor(lastReplacementEnd);
+    }, 0);
+  }
+}
 
 
 
@@ -3926,6 +3972,7 @@ const formulaHinter = (cm, options) => {
 
           cmEditor.on('change', (cm, change) => {
             applySnippyFunctions(cm, change);
+            applySnippyFieldNameFunction(cm, change);
           });
 
           cmEditor.on('inputRead', (cm, change) => {
