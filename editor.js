@@ -249,6 +249,89 @@ document.addEventListener('DOMContentLoaded', () => {
   let allDonors = []
   let activeRejectionId = null 
   const isEdge = navigator.userAgent.includes('Edg/');
+  let isApplyingSnippyFunctions = false;
+
+  function isFormulaFieldContext() {
+    return !!pageMetadata && pageMetadata.type === 'formula';
+  }
+
+  function getActiveFormulaFieldName() {
+    if (!isFormulaFieldContext()) return '';
+    return (pageMetadata.label || '').trim();
+  }
+
+  const SNIPPY_FUNCTIONS = [
+    {
+      id: 'snippy-snippyfieldname',
+      name: 'snippyfieldname',
+      signature: 'snippyfieldname()',
+      description: 'Returns the name of the current field.',
+      example: 'snippyfieldname()',
+      source: 'snippy',
+      formulaOnly: true,
+      getValue: () => getActiveFormulaFieldName()
+    }
+  ];
+
+  function getSnippyFunctionsForCurrentContext() {
+    return SNIPPY_FUNCTIONS.filter((func) => !(func.formulaOnly && !isFormulaFieldContext()));
+  }
+
+  function buildCombinedFunctionsList(quickbaseFunctions = []) {
+    const combined = [...quickbaseFunctions, ...getSnippyFunctionsForCurrentContext()];
+    const seenNames = new Set();
+    return combined.filter((func) => {
+      const key = (func?.name || '').toLowerCase();
+      if (!key || seenNames.has(key)) return false;
+      seenNames.add(key);
+      return true;
+    });
+  }
+
+  function escapeRegExp(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function applySnippyFunctions(cm, change) {
+    if (!cm || isApplyingSnippyFunctions) return;
+
+    const insertedText = Array.isArray(change?.text) ? change.text.join('\n') : '';
+    const typedClosingParen = insertedText.includes(')');
+    const hasWholeFunctionCall = /\b[a-z_][a-z0-9_]*\(\)/i.test(insertedText);
+    if (!typedClosingParen && !hasWholeFunctionCall && change?.origin !== '+paste') return;
+
+    const snippyFunctions = getSnippyFunctionsForCurrentContext();
+    if (!snippyFunctions.length) return;
+
+    let replacedAny = false;
+    const cursorBefore = cm.getCursor();
+    isApplyingSnippyFunctions = true;
+
+    try {
+      cm.operation(() => {
+        snippyFunctions.forEach((func) => {
+          const replacement = typeof func.getValue === 'function' ? func.getValue() : '';
+          if (!replacement) return;
+
+          const pattern = new RegExp(`${escapeRegExp(func.name)}\\(\\)`, 'i');
+          const search = cm.getSearchCursor(pattern, CodeMirror.Pos(cm.firstLine(), 0), {
+            caseFold: true
+          });
+
+          while (search.findNext()) {
+            search.replace(replacement);
+            replacedAny = true;
+          }
+        });
+      });
+    } finally {
+      isApplyingSnippyFunctions = false;
+    }
+
+    if (replacedAny) {
+      cm.setCursor(cursorBefore);
+    }
+  }
 
 
 
@@ -952,12 +1035,12 @@ const announcementFeedbackEl = document.getElementById('announcement-feedback');
         console.log('[Snippy Debug] displayFunctionsList received. Payload:', request.data);
 
         if (isFormula) {
-          allFunctions = request.data;
+          allFunctions = buildCombinedFunctionsList(request.data || []);
+          renderFunctionList(allFunctions);
           if (cmEditor) {
             const functionNames = allFunctions.map(f => f.name);
             cmEditor.setOption('mode', { name: 'qb-formula', keywords: functionNames });
             console.log('[Snippy Debug] Mode updated for formula with dynamic keywords.');
-            renderFunctionList(allFunctions);
           }
         }
         break;
@@ -1112,7 +1195,7 @@ function handleDisplayValidationResult(payload) {
       const item = document.createElement('div')
       item.className = 'function-item'
       item.dataset.id = func.id
-      item.textContent = func.name
+      item.textContent = `${func.name} ${func.source === 'snippy' ? '(Snippy)' : '(Quickbase)'}`
       item.title = `ID: ${func.id}`
       functionListContainer.appendChild(item)
     })
@@ -1172,7 +1255,8 @@ function handleDisplayValidationResult(payload) {
       return
     }
     functionInfoSignature.textContent = func.signature
-    functionInfoDescription.textContent = func.description
+    const sourceLabel = func.source === 'snippy' ? 'Snippy Function' : 'Quickbase Function'
+    functionInfoDescription.textContent = `${sourceLabel}: ${func.description}`
     functionInfoExample.textContent = func.example
   }
 function showErrorModal(message) {
@@ -1361,6 +1445,11 @@ function showErrorModal(message) {
         const funcId = funcItem.dataset.id
         console.log('[Snippy Debug] Requesting full details for:', funcId)
 
+        const selectedFunction = allFunctions.find((f) => String(f.id) === String(funcId))
+        if (selectedFunction?.source === 'snippy') {
+          updateFunctionInfoPanel(selectedFunction)
+          return
+        }
 
         chrome.runtime.sendMessage({
           action: 'getFunctionDetailsFromPage',
@@ -3734,10 +3823,10 @@ const formulaHinter = (cm, options) => {
   if (searchMode === 'ALL') {
     const funcMatches = allFunctions
       .filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .map(f => ({
-        text: `${f.name}()`,
-        displayText: f.name,
-        details: `Function`,
+          .map(f => ({
+            text: `${f.name}()`,
+            displayText: f.name,
+        details: f.source === 'snippy' ? 'Snippy Function' : 'Function',
         render: renderSuggestion,
         hint: (cm, data, completion) => {
           const charsAfter = cm.getRange(to, CodeMirror.Pos(to.line, to.ch + 2));
@@ -3835,6 +3924,10 @@ const formulaHinter = (cm, options) => {
             showFormulaHint(cm);
           }, 250));
 
+          cmEditor.on('change', (cm, change) => {
+            applySnippyFunctions(cm, change);
+          });
+
           cmEditor.on('inputRead', (cm, change) => {
             const typed = change.text[0];
             if (!typed || cm.state.completionActive) return;
@@ -3922,6 +4015,12 @@ const formulaHinter = (cm, options) => {
         loadAndRenderThemeSelectors()
 
         if (isFormula) {
+          allFunctions = buildCombinedFunctionsList([]);
+          renderFunctionList(allFunctions);
+          if (cmEditor) {
+            cmEditor.setOption('mode', { name: 'qb-formula', keywords: allFunctions.map((f) => f.name) });
+          }
+
           chrome.runtime.sendMessage({
             action: 'requestValidation',
             code: cmEditor.getValue()
