@@ -1140,6 +1140,90 @@
         max-width: 500px;
       }
 
+      #donor-functions-modal {
+        max-width: 900px;
+        height: 80vh;
+      }
+
+      #donor-functions-modal .modal-body {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 20px;
+      }
+
+      .donor-function-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .donor-function-panel h3 {
+        margin: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+      }
+
+      body.dark .donor-function-panel h3 {
+        border-bottom-color: #44475a;
+      }
+
+      #generated-function-preview {
+        display: block;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fafafa;
+        font-family: Consolas, Monaco, 'Courier New', monospace;
+      }
+
+      body.dark #generated-function-preview {
+        border-color: #44475a;
+        background: #1e1f29;
+      }
+
+      #donor-function-list {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow-y: auto;
+        flex-grow: 1;
+        padding: 10px;
+      }
+
+      body.dark #donor-function-list {
+        border-color: #44475a;
+      }
+
+      .donor-function-card {
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      body.dark .donor-function-card {
+        border-color: #44475a;
+        background: #282a36;
+      }
+
+      .donor-function-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .donor-function-name {
+        font-weight: bold;
+        font-family: Consolas, Monaco, 'Courier New', monospace;
+        word-break: break-word;
+      }
+
+      .donor-function-definition {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
       #my-submissions-modal {
         max-width: 800px;
         height: 70vh;
@@ -1343,6 +1427,7 @@ body.dark .snippy-pills .pill {
               <div id="donor-dropdown" class="hidden dropdown-menu" style="margin-top: 6px;">
                 <button id="donor-submit-insult-btn">Submit a Freeloader Comment</button>
                 <button id="donor-view-submissions-btn">View My Submissions</button>
+                <button id="donor-manage-functions-btn">Manage Functions</button>
                 <div class="dropdown-item" id="light-theme-container">
                   <span>Preferred Light Theme:</span>
                   <select id="light-theme-select"></select>
@@ -1659,6 +1744,40 @@ body.dark .snippy-pills .pill {
       <div class="modal-footer">
         <button class="modal-cancel-btn">Cancel</button>
         <button id="donor-insult-submit-btn" class="primary">Submit for Review</button>
+      </div>
+    </div>
+    <div id="donor-functions-modal" class="hidden modal">
+      <div class="modal-header">
+        <h2>🛠️ Manage Donor Functions</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="donor-function-panel">
+          <h3>Create a Function</h3>
+          <div class="form-group">
+            <label for="donor-function-name-body">Function Name Body</label>
+            <input type="text" id="donor-function-name-body" placeholder="CustomerName">
+          </div>
+          <div class="form-group">
+            <label>Generated Function Preview</label>
+            <div id="generated-function-preview">Snippy()</div>
+          </div>
+          <div class="form-group">
+            <label for="donor-function-definition">Definition Text</label>
+            <textarea id="donor-function-definition" rows="6" placeholder="Text this function should insert"></textarea>
+          </div>
+          <button id="donor-function-save-btn" class="primary">Create Function</button>
+          <div id="donor-function-feedback" class="admin-feedback"></div>
+        </div>
+        <div class="donor-function-panel">
+          <h3>Existing Donor-Defined Functions</h3>
+          <div id="donor-function-list">
+            <p style="text-align: center; padding: 20px;">Loading functions...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn">Close</button>
       </div>
     </div>
     <div id="my-submissions-modal" class="hidden modal">

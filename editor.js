@@ -345,6 +345,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function refreshSnippyFunctionUI() {
+    allFunctions = buildCombinedFunctionsList(allFunctions.filter((func) => func?.source !== 'snippy'));
+    renderFunctionList(allFunctions);
+
+    if (cmEditor) {
+      const functionNames = allFunctions.map((func) => func.name);
+      cmEditor.setOption('mode', { name: 'qb-formula', keywords: functionNames });
+    }
+  }
+
   function escapeRegExp(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -930,6 +940,14 @@ if (window.__snippyOverlayNudge) window.__snippyOverlayNudge();
   const mySubmissionsModal = document.getElementById('my-submissions-modal')
   const mySubmissionsContainer = document.getElementById('my-submissions-container')
   const mySubmissionsFeedbackEl = document.getElementById('my-submissions-feedback')
+  const donorManageFunctionsBtn = document.getElementById('donor-manage-functions-btn')
+  const donorFunctionsModal = document.getElementById('donor-functions-modal')
+  const donorFunctionNameBodyInput = document.getElementById('donor-function-name-body')
+  const generatedFunctionPreview = document.getElementById('generated-function-preview')
+  const donorFunctionDefinitionInput = document.getElementById('donor-function-definition')
+  const donorFunctionSaveBtn = document.getElementById('donor-function-save-btn')
+  const donorFunctionFeedbackEl = document.getElementById('donor-function-feedback')
+  const donorFunctionListEl = document.getElementById('donor-function-list')
   const showCommentsToggle = document.getElementById('show-comments-toggle')
 
   const confirmationModal = document.getElementById('confirmation-modal')
@@ -1789,6 +1807,10 @@ function renderAdminAnnouncementList(data) {
     donorSubmitInsultBtn.addEventListener('click', handleDonorSubmitInsultClick)
     donorInsultSubmitBtn.addEventListener('click', handleDonorInsultSubmit)
     donorViewSubmissionsBtn.addEventListener('click', handleViewSubmissionsClick)
+    donorManageFunctionsBtn.addEventListener('click', handleManageDonorFunctionsClick)
+    donorFunctionNameBodyInput.addEventListener('input', updateDonorFunctionPreview)
+    donorFunctionSaveBtn.addEventListener('click', handleCreateDonorFunction)
+    donorFunctionListEl.addEventListener('click', handleDonorFunctionListClick)
     showCommentsToggle.addEventListener('change', (e) => {
       chrome.storage.sync.set({
         showFreeloaderComments: e.target.checked
@@ -2569,6 +2591,213 @@ document.getElementById('manual-save-confirm-btn')?.addEventListener('click', as
   }
 
   // --- Donor Functions ---
+  const DONOR_FUNCTION_NAME_PATTERN = /^[A-Za-z0-9_]+$/;
+
+  function getGeneratedDonorFunctionName(nameBody) {
+    return `Snippy${nameBody}()`;
+  }
+
+  function showDonorFunctionFeedback(message, isSuccess) {
+    donorFunctionFeedbackEl.textContent = message;
+    donorFunctionFeedbackEl.className = `admin-feedback ${isSuccess ? 'success' : 'error'}`;
+    donorFunctionFeedbackEl.style.display = 'block';
+  }
+
+  function clearDonorFunctionFeedback() {
+    donorFunctionFeedbackEl.style.display = 'none';
+  }
+
+  function updateDonorFunctionPreview() {
+    const nameBody = donorFunctionNameBodyInput.value.trim();
+    generatedFunctionPreview.textContent = nameBody ? getGeneratedDonorFunctionName(nameBody) : 'Snippy()';
+  }
+
+  function getSanitizedDonorFunctionRows() {
+    return donorDefinedFunctions.map((func) => {
+      const functionName = `${func.name}()`;
+      const definitionText = typeof func.getValue === 'function' ? String(func.getValue() || '').trim() : '';
+      return {
+        functionName,
+        definitionText
+      };
+    }).filter((row) => row.functionName && row.definitionText);
+  }
+
+  function renderDonorFunctionList() {
+    donorFunctionListEl.innerHTML = '';
+    const rows = getSanitizedDonorFunctionRows();
+
+    if (rows.length === 0) {
+      donorFunctionListEl.innerHTML = '<p style="text-align: center; padding: 20px;">No donor-defined functions found yet.</p>';
+      return;
+    }
+
+    rows.forEach((row) => {
+      const card = document.createElement('div');
+      card.className = 'donor-function-card';
+
+      const header = document.createElement('div');
+      header.className = 'donor-function-header';
+
+      const title = document.createElement('div');
+      title.className = 'donor-function-name';
+      title.textContent = row.functionName;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'action-btn danger donor-function-delete-btn';
+      deleteBtn.dataset.functionName = row.functionName;
+      deleteBtn.textContent = 'Delete';
+
+      const definition = document.createElement('div');
+      definition.className = 'donor-function-definition';
+      definition.textContent = row.definitionText;
+
+      header.appendChild(title);
+      header.appendChild(deleteBtn);
+      card.appendChild(header);
+      card.appendChild(definition);
+      donorFunctionListEl.appendChild(card);
+    });
+  }
+
+  async function reloadDonorFunctionsAndRefreshUI() {
+    await loadDonorDefinedFunctions();
+    renderDonorFunctionList();
+    refreshSnippyFunctionUI();
+  }
+
+  async function getDonorUnlockCredentials() {
+    const { snippyUnlock } = await chrome.storage.sync.get('snippyUnlock');
+    if (!snippyUnlock?.email || !snippyUnlock?.code) {
+      throw new Error('Could not identify donor credentials. Please unlock Snippy again.');
+    }
+    return snippyUnlock;
+  }
+
+  async function handleManageDonorFunctionsClick() {
+    donorDropdown.classList.add('hidden');
+    donorFunctionNameBodyInput.value = '';
+    donorFunctionDefinitionInput.value = '';
+    clearDonorFunctionFeedback();
+    updateDonorFunctionPreview();
+    donorFunctionListEl.innerHTML = '<p style="text-align: center; padding: 20px;">Loading functions...</p>';
+    openModal(donorFunctionsModal);
+
+    try {
+      await reloadDonorFunctionsAndRefreshUI();
+    } catch (err) {
+      donorFunctionListEl.innerHTML = '';
+      showDonorFunctionFeedback(`Error: ${err.message}`, false);
+    }
+  }
+
+  async function handleCreateDonorFunction() {
+    const nameBody = donorFunctionNameBodyInput.value.trim();
+    const definitionText = donorFunctionDefinitionInput.value.trim();
+
+    if (!nameBody) {
+      showDonorFunctionFeedback('Function name body is required.', false);
+      return;
+    }
+    if (!DONOR_FUNCTION_NAME_PATTERN.test(nameBody)) {
+      showDonorFunctionFeedback('Function name body may contain only letters, numbers, and underscores.', false);
+      return;
+    }
+    if (!definitionText) {
+      showDonorFunctionFeedback('Definition text is required.', false);
+      return;
+    }
+
+    donorFunctionSaveBtn.disabled = true;
+    donorFunctionSaveBtn.textContent = 'Saving...';
+    clearDonorFunctionFeedback();
+
+    try {
+      const snippyUnlock = await getDonorUnlockCredentials();
+      const functionName = getGeneratedDonorFunctionName(nameBody);
+
+      const response = await fetch('https://snippy-server-clean.onrender.com/api/functions/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: snippyUnlock.email,
+          code: snippyUnlock.code,
+          functionName,
+          definitionText
+        })
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || `Could not save function (${response.status}).`);
+      }
+
+      showDonorFunctionFeedback(`✅ ${functionName} saved.`, true);
+      donorFunctionNameBodyInput.value = '';
+      donorFunctionDefinitionInput.value = '';
+      updateDonorFunctionPreview();
+      await reloadDonorFunctionsAndRefreshUI();
+    } catch (err) {
+      showDonorFunctionFeedback(`Error: ${err.message}`, false);
+    } finally {
+      donorFunctionSaveBtn.disabled = false;
+      donorFunctionSaveBtn.textContent = 'Create Function';
+    }
+  }
+
+  function handleDonorFunctionListClick(e) {
+    const deleteBtn = e.target.closest('.donor-function-delete-btn');
+    if (!deleteBtn) return;
+
+    const functionName = deleteBtn.dataset.functionName;
+    if (!functionName) return;
+
+    confirmationTitle.textContent = 'Delete Function?';
+    confirmationMessage.innerHTML = `Are you sure you want to delete <strong>${functionName}</strong>?`;
+
+    const confirmBtn = confirmationModal.querySelector('#confirmation-confirm-btn');
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    newConfirmBtn.addEventListener('click', () => {
+      deleteDonorFunction(functionName);
+    }, { once: true });
+
+    openModal(confirmationModal);
+  }
+
+  async function deleteDonorFunction(functionName) {
+    closeModal(confirmationModal);
+    clearDonorFunctionFeedback();
+
+    try {
+      const snippyUnlock = await getDonorUnlockCredentials();
+      const response = await fetch('https://snippy-server-clean.onrender.com/api/functions/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: snippyUnlock.email,
+          code: snippyUnlock.code,
+          functionName
+        })
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || `Could not delete function (${response.status}).`);
+      }
+
+      showDonorFunctionFeedback(`✅ ${functionName} deleted.`, true);
+      await reloadDonorFunctionsAndRefreshUI();
+    } catch (err) {
+      showDonorFunctionFeedback(`Error: ${err.message}`, false);
+    }
+  }
+
   function handleDonorSubmitInsultClick() {
     donorDropdown.classList.add('hidden')
     submitInsultFeedbackEl.style.display = 'none'
