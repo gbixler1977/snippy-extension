@@ -993,7 +993,7 @@ const announcementFeedbackEl = document.getElementById('announcement-feedback');
         console.log('[Snippy Debug] displayFunctionsList received. Payload:', request.data);
 
         if (isFormula) {
-          allFunctions = request.data;
+          allFunctions = buildCombinedFunctionsList(request.data || []);
           if (cmEditor) {
             const functionNames = allFunctions.map(f => f.name);
             cmEditor.setOption('mode', { name: 'qb-formula', keywords: functionNames });
@@ -1153,7 +1153,7 @@ function handleDisplayValidationResult(payload) {
       const item = document.createElement('div')
       item.className = 'function-item'
       item.dataset.id = func.id
-      item.textContent = func.name
+      item.textContent = `${func.name} ${func.source === 'snippy' ? '(Snippy)' : '(Quickbase)'}`
       item.title = `ID: ${func.id}`
       functionListContainer.appendChild(item)
     })
@@ -1213,7 +1213,8 @@ function handleDisplayValidationResult(payload) {
       return
     }
     functionInfoSignature.textContent = func.signature
-    functionInfoDescription.textContent = func.description
+    const sourceLabel = func.source === 'snippy' ? 'Snippy Function' : 'Quickbase Function'
+    functionInfoDescription.textContent = `${sourceLabel}: ${func.description}`
     functionInfoExample.textContent = func.example
   }
 function showErrorModal(message) {
@@ -1402,6 +1403,11 @@ function showErrorModal(message) {
         const funcId = funcItem.dataset.id
         console.log('[Snippy Debug] Requesting full details for:', funcId)
 
+        const selectedFunction = allFunctions.find((f) => String(f.id) === String(funcId))
+        if (selectedFunction?.source === 'snippy') {
+          updateFunctionInfoPanel(selectedFunction)
+          return
+        }
 
         chrome.runtime.sendMessage({
           action: 'getFunctionDetailsFromPage',
@@ -3775,10 +3781,10 @@ const formulaHinter = (cm, options) => {
   if (searchMode === 'ALL') {
     const funcMatches = allFunctions
       .filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .map(f => ({
-        text: `${f.name}()`,
-        displayText: f.name,
-        details: `Function`,
+          .map(f => ({
+            text: `${f.name}()`,
+            displayText: f.name,
+        details: f.source === 'snippy' ? 'Snippy Function' : 'Function',
         render: renderSuggestion,
         hint: (cm, data, completion) => {
           const charsAfter = cm.getRange(to, CodeMirror.Pos(to.line, to.ch + 2));
