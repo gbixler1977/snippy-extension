@@ -249,6 +249,47 @@ document.addEventListener('DOMContentLoaded', () => {
   let allDonors = []
   let activeRejectionId = null 
   const isEdge = navigator.userAgent.includes('Edg/');
+  let isApplyingSnippyFieldName = false;
+
+  function getActiveFormulaFieldName() {
+    if (!pageMetadata || pageMetadata.type !== 'formula') return '';
+    return (pageMetadata.label || '').trim();
+  }
+
+  function applySnippyFieldNameFunction(cm, change) {
+    if (!cm || isApplyingSnippyFieldName) return;
+    if (!pageMetadata || pageMetadata.type !== 'formula') return;
+
+    const fieldName = getActiveFormulaFieldName();
+    if (!fieldName) return;
+
+    const insertedText = Array.isArray(change?.text) ? change.text.join('\n') : '';
+    const triggerRegex = /snippyfieldname\(\)/i;
+    if (!triggerRegex.test(insertedText) && change?.origin !== '+paste') return;
+
+    let replacedAny = false;
+    const cursorBefore = cm.getCursor();
+    isApplyingSnippyFieldName = true;
+
+    try {
+      cm.operation(() => {
+        const search = cm.getSearchCursor(/snippyfieldname\(\)/i, CodeMirror.Pos(cm.firstLine(), 0), {
+          caseFold: true
+        });
+
+        while (search.findNext()) {
+          search.replace(fieldName);
+          replacedAny = true;
+        }
+      });
+    } finally {
+      isApplyingSnippyFieldName = false;
+    }
+
+    if (replacedAny) {
+      cm.setCursor(cursorBefore);
+    }
+  }
 
 
 
@@ -3834,6 +3875,10 @@ const formulaHinter = (cm, options) => {
             if (!token.string.trim() || token.type === 'string' || token.type === 'comment' || token.type === 'operator') return;
             showFormulaHint(cm);
           }, 250));
+
+          cmEditor.on('change', (cm, change) => {
+            applySnippyFieldNameFunction(cm, change);
+          });
 
           cmEditor.on('inputRead', (cm, change) => {
             const typed = change.text[0];
