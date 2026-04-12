@@ -249,82 +249,41 @@ document.addEventListener('DOMContentLoaded', () => {
   let allDonors = []
   let activeRejectionId = null 
   const isEdge = navigator.userAgent.includes('Edg/');
-  let isApplyingSnippyFunctions = false;
-
-  function isFormulaFieldContext() {
-    return !!pageMetadata && pageMetadata.type === 'formula';
-  }
+  let isApplyingSnippyFieldName = false;
 
   function getActiveFormulaFieldName() {
-    if (!isFormulaFieldContext()) return '';
+    if (!pageMetadata || pageMetadata.type !== 'formula') return '';
     return (pageMetadata.label || '').trim();
   }
 
-  const SNIPPY_FUNCTIONS = [
-    {
-      id: 'snippy-snippyfieldname',
-      name: 'snippyfieldname',
-      signature: 'snippyfieldname()',
-      description: 'Returns the name of the current field.',
-      example: 'snippyfieldname()',
-      source: 'snippy',
-      formulaOnly: true,
-      getValue: () => getActiveFormulaFieldName()
-    }
-  ];
+  function applySnippyFieldNameFunction(cm, change) {
+    if (!cm || isApplyingSnippyFieldName) return;
+    if (!pageMetadata || pageMetadata.type !== 'formula') return;
 
-  function getSnippyFunctionsForCurrentContext() {
-    return SNIPPY_FUNCTIONS.filter((func) => !(func.formulaOnly && !isFormulaFieldContext()));
-  }
-
-  function buildCombinedFunctionsList(quickbaseFunctions = []) {
-    const combined = [...quickbaseFunctions, ...getSnippyFunctionsForCurrentContext()];
-    const seenNames = new Set();
-    return combined.filter((func) => {
-      const key = (func?.name || '').toLowerCase();
-      if (!key || seenNames.has(key)) return false;
-      seenNames.add(key);
-      return true;
-    });
-  }
-
-  function escapeRegExp(text) {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  function applySnippyFunctions(cm, change) {
-    if (!cm || isApplyingSnippyFunctions) return;
+    const fieldName = getActiveFormulaFieldName();
+    if (!fieldName) return;
 
     const insertedText = Array.isArray(change?.text) ? change.text.join('\n') : '';
-    const hasPotentialSnippyFn = /\b[a-z_][a-z0-9_]*\(\)/i.test(insertedText);
-    if (!hasPotentialSnippyFn && change?.origin !== '+paste') return;
-
-    const snippyFunctions = getSnippyFunctionsForCurrentContext();
-    if (!snippyFunctions.length) return;
+    const triggerRegex = /snippyfieldname\(\)/i;
+    if (!triggerRegex.test(insertedText) && change?.origin !== '+paste') return;
 
     let replacedAny = false;
     const cursorBefore = cm.getCursor();
-    isApplyingSnippyFunctions = true;
+    isApplyingSnippyFieldName = true;
 
     try {
       cm.operation(() => {
-        snippyFunctions.forEach((func) => {
-          const replacement = typeof func.getValue === 'function' ? func.getValue() : '';
-          if (!replacement) return;
-
-          const pattern = new RegExp(`${escapeRegExp(func.name)}\\(\\)`, 'i');
-          const search = cm.getSearchCursor(pattern, CodeMirror.Pos(cm.firstLine(), 0), {
-            caseFold: true
-          });
-
-          while (search.findNext()) {
-            search.replace(replacement);
-            replacedAny = true;
-          }
+        const search = cm.getSearchCursor(/snippyfieldname\(\)/i, CodeMirror.Pos(cm.firstLine(), 0), {
+          caseFold: true
         });
+
+        while (search.findNext()) {
+          search.replace(fieldName);
+          replacedAny = true;
+        }
       });
     } finally {
-      isApplyingSnippyFunctions = false;
+      isApplyingSnippyFieldName = false;
     }
 
     if (replacedAny) {
@@ -3924,7 +3883,7 @@ const formulaHinter = (cm, options) => {
           }, 250));
 
           cmEditor.on('change', (cm, change) => {
-            applySnippyFunctions(cm, change);
+            applySnippyFieldNameFunction(cm, change);
           });
 
           cmEditor.on('inputRead', (cm, change) => {
